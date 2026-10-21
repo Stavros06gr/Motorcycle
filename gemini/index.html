@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotoDrive Pro | Οδηγός Πρακτικών Εξετάσεων Μοτοσυκλέτας</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Orbitron for dashboard gauges -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            moto: {
+              dark: '#0B0F17',
+              card: '#131B2B',
+              cardHover: '#1B263B',
+              border: '#1F2E47',
+              cyan: '#06B6D4',
+              neon: '#22D3EE',
+              amber: '#F59E0B',
+              red: '#EF4444',
+              emerald: '#10B981',
+              accent: '#3B82F6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Orbitron', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbars & smooth animations */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2E47;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #06B6D4;
+    }
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+    }
+    .glow-amber {
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+    }
+    .glow-red {
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-moto-dark text-slate-100 font-sans min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+
+  <!-- TOP APP BAR -->
+  <header class="sticky top-0 z-50 bg-moto-dark/90 backdrop-blur-md border-b border-moto-border shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Moto Indicator -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('study')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-lg tracking-wider text-white">MOTO<span class="text-cyan-400">DRIVE</span></span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono font-semibold">A1/A2/A</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Πρακτικές Εξετάσεις & 12 Έλεγχοι</p>
+        </div>
+      </div>
+
+      <!-- Quick Progress Bar & Stats -->
+      <div class="hidden md:flex items-center space-x-6">
+        <div class="flex items-center space-x-3 bg-moto-card px-3 py-1.5 rounded-xl border border-moto-border">
+          <div class="text-xs font-semibold text-slate-400">Πρόοδος Έρευνας:</div>
+          <div class="w-28 bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div id="global-progress-bar" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full transition-all duration-500" style="width: 25%"></div>
+          </div>
+          <span id="global-progress-text" class="text-xs font-mono font-bold text-cyan-300">25%</span>
+        </div>
+        <button onclick="resetAllProgress()" class="text-xs text-slate-400 hover:text-red-400 transition" title="Μηδενισμός Προόδου">
+          <svg class="w-4 h-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+        </button>
+      </div>
+
+      <!-- Sound FX Toggle Button -->
+      <div class="flex items-center space-x-2">
+        <button id="sound-btn" onclick="toggleSound()" class="p-2 rounded-lg bg-moto-card border border-moto-border hover:border-cyan-500/50 text-slate-300 hover:text-cyan-400 transition" title="Ενεργοποίηση/Απενεργοποίηση Ήχων">
+          <svg id="sound-icon-on" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <svg id="sound-icon-off" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex space-x-1 sm:space-x-2 overflow-x-auto pb-2 scrollbar-none">
+      <button onclick="switchTab('study')" id="tab-btn-study" class="nav-tab active flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-transparent whitespace-nowrap bg-cyan-950/70 text-cyan-300 border-cyan-500/40 shadow-sm">
+        <span>📖</span>
+        <span>Οδηγός Θεωρίας</span>
+      </button>
+
+      <button onclick="switchTab('flashcards')" id="tab-btn-flashcards" class="nav-tab flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-transparent whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-moto-card">
+        <span>🗂️</span>
+        <span>Flashcards</span>
+      </button>
+
+      <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="nav-tab flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-transparent whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-moto-card">
+        <span>🎯</span>
+        <span>Τεστ Εξετάσεων</span>
+      </button>
+
+      <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="nav-tab flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-transparent whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-moto-card">
+        <span>⏱️</span>
+        <span>Εργαστήριο Πίστας</span>
+      </button>
+
+      <button onclick="switchTab('matrix')" id="tab-btn-matrix" class="nav-tab flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-transparent whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-moto-card">
+        <span>⚡</span>
+        <span>Σκονάκι Αριθμών</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: ΟΔΗΓΟΣ ΘΕΩΡΙΑΣ (STUDY GUIDE) -->
+    <!-- ========================================== -->
+    <section id="tab-study" class="tab-content space-y-8">
+      
+      <!-- HERO BANNER -->
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-moto-card via-slate-900 to-cyan-950/40 p-6 md:p-8 border border-moto-border shadow-xl">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+          <svg class="w-72 h-72 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-1.28c-.46-2.28-2.48-4-4.72-4h-2.12c-.55 0-1-.45-1-1 0-.55.45-1 1-1h1.5c1.38 0 2.5-1.12 2.5-2.5S13.76 2 12.38 2H9.5C8.12 2 7 3.12 7 4.5c0 .38.08.74.24 1.06C5.07 6.13 3.39 7.85 2.62 10.15 1.09 11.02 0 12.63 0 14.5 0 17 2 19 4.5 19h1.12c.46 2.28 2.48 4 4.72 4h4.32c2.24 0 4.26-1.72 4.72-4H21c1.66 0 3-1.34 3-3s-1.34-3-3-3z"/>
+          </svg>
+        </div>
+        <div class="relative z-10 max-w-3xl">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-3">
+            <span>🏁 Πρακτικές Εξετάσεις Υπουργείου Μεταφορών</span>
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Ολοκληρωμένος Οδηγός Επιτυχίας Μοτοσυκλέτας
+          </h1>
+          <p class="mt-2 text-sm sm:text-base text-slate-300 leading-relaxed">
+            Μάθε μεθοδικά και χωρίς άγχος τις <strong class="text-cyan-300">Δοκιμασίες Πίστας</strong>, τους <strong class="text-amber-300">12 Ελέγχους (4+4+4)</strong>, την <strong class="text-emerald-300">Πορεία</strong> και όλες τις κρίσιμες ερωτήσεις του εξεταστή.
+          </p>
+
+          <div class="mt-5 flex flex-wrap gap-2">
+            <a href="#section-pista" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition flex items-center space-x-1.5">
+              <span>Α' Σκέλος: Πίστα</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </a>
+            <a href="#section-checks" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition flex items-center space-x-1.5">
+              <span>Οι 12 Έλεγχοι (4+4+4)</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </a>
+            <a href="#section-poreia" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center space-x-1.5">
+              <span>Β' Σκέλος & Ερωτήσεις</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-SECTION 1: Α' ΣΚΕΛΟΣ ΠΙΣΤΑ -->
+      <div id="section-pista" class="space-y-6">
+        <div class="flex items-center space-x-3 border-b border-moto-border pb-3">
+          <span class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">1</span>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">Α' Σκέλος Εξετάσεων: Δοκιμασίες Πίστας</h2>
+            <p class="text-xs text-slate-400">Ισχύει για χειροκίνητο κιβώτιο (στα αυτόματα αφαιρούνται τα περιττά βήματα συμπλέκτη)</p>
+          </div>
+        </div>
+
+        <!-- 1. Τσούλημα Δικύκλου -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden transition hover:border-cyan-500/40">
+          <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 font-mono text-sm font-bold">ΒΗΜΑ 01</div>
+              <h3 class="text-lg font-bold text-white">Τσούλημα Δικύκλου & Εκκίνηση (9 Απαραίτητα Βήματα)</h3>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">Υποχρεωτική Σειρά</span>
+          </div>
+
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Steps Cards -->
+              <div class="space-y-3">
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Κατέβασμα ζελατίνας κράνους:</strong> Αφήνουμε άδεια/κενό μόνο για ένα δάχτυλο άνοιγμα για εξαερισμό.</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Σιγουρεύω νεκρά (N):</strong> Βεβαιώνομαι ότι έχω νεκρά θέση στο κιβώτιο ταχυτήτων (συχνά ενημερώνει ο εκπαιδευτής).</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Ανέβασμα πλαγιοστάτη ΜΕ ΠΡΟΣΟΧΗ:</strong> Προσοχή να μην γείρει και πέσει το δίκυκλο από την αντίθετη μεριά.</p>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">4</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Τσούλημα 10 μέτρων:</strong> Με τα 2 χέρια σταθερά στο τιμόνι, από τη γραμμή ελέγχου μέχρι τη γραμμή εκκίνησης.</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">5</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Στήριξη στη γραμμή:</strong> Στήριξη ξανά με τον πλαγιοστάτη <span class="text-amber-400 font-semibold">υποχρεωτικά</span> στη γραμμή εκκίνησης.</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">6</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Ανέβασμα με έλεγχο:</strong> Ανεβαίνουμε στο όχημα κοιτώντας υποχρεωτικά πίσω (έλεγχος κεφαλιού).</p>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">7</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Ανέβασμα πλαγιοστάτη:</strong> Αλλιώς, αν βάλουμε μπρος και κουμπώσουμε 1η ταχύτητα, ο κινητήρας θα σβήσει αυτόματα για ασφάλεια!</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">8</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Έλεγχος ζελατίνας ΞΑΝΑ:</strong> Επαληθεύουμε ότι είναι κατεβασμένη (μήπως την ανεβάσαμε εκ παραδρομής).</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                  <span class="w-6 h-6 rounded-full bg-cyan-600/30 text-cyan-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">9</span>
+                  <p class="text-xs text-slate-300"><strong class="text-white">Μίζα & Εκκίνηση:</strong> Κλειδί δεξιά, κόκκινος διακόπτης ΟΝ, μίζα, συμπλέκτης, 1η ταχύτητα και ξεκινάμε για τους κώνους!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Ελικοειδής Διαδρομή (Κώνοι - Slalom) -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+          <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-mono text-cyan-400 font-bold">ΑΣΚΗΣΗ 02</span>
+              <h3 class="text-lg font-bold text-white">Ελικοειδής Διαδρομή (Κώνοι / Slalom)</h3>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs px-2.5 py-1 rounded-lg bg-blue-900/60 text-blue-300 border border-blue-700">7 Κώνοι</span>
+              <span class="text-xs px-2.5 py-1 rounded-lg bg-cyan-900/60 text-cyan-300 border border-cyan-700 font-mono">1η Ταχύτητα</span>
+            </div>
+          </div>
+
+          <div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Diagram & Dimensions -->
+            <div class="lg:col-span-5 bg-slate-900/90 rounded-xl p-4 border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex justify-between">
+                  <span>Οπτικό Σχεδιάγραμμα Slalom</span>
+                  <span class="text-cyan-400 font-mono">Είσοδος: Ελεύθερη</span>
+                </div>
+
+                <!-- Custom SVG Diagram for Slalom -->
+                <div class="w-full bg-slate-950 rounded-lg p-3 border border-slate-800 flex items-center justify-center">
+                  <svg viewBox="0 0 500 120" class="w-full h-auto">
+                    <!-- Track boundary lines -->
+                    <line x1="10" y1="20" x2="490" y2="20" stroke="#475569" stroke-width="2" stroke-dasharray="5 5" />
+                    <line x1="10" y1="100" x2="490" y2="100" stroke="#475569" stroke-width="2" stroke-dasharray="5 5" />
+                    
+                    <!-- 7 Cones in a line -->
+                    <g id="cones" fill="#F59E0B">
+                      <polygon points="50,55 45,65 55,65" />
+                      <polygon points="115,55 110,65 120,65" />
+                      <polygon points="180,55 175,65 185,65" />
+                      <polygon points="245,55 240,65 250,65" />
+                      <polygon points="310,55 305,65 315,65" />
+                      <polygon points="375,55 370,65 380,65" />
+                      <polygon points="440,55 435,65 445,65" />
+                    </g>
+
+                    <!-- Slalom S-Curve Path -->
+                    <path d="M 20,60 Q 50,25 82,60 T 147,60 T 212,60 T 277,60 T 342,60 T 407,60 T 470,60" fill="none" stroke="#06B6D4" stroke-width="3" stroke-linecap="round"/>
+                    
+                    <text x="30" y="15" fill="#94A3B8" font-size="10">Λευκή διαγράμμιση (Δεν πατάμε)</text>
+                    <text x="180" y="115" fill="#06B6D4" font-size="11" font-weight="bold">Slalom με 1η ταχύτητα</text>
+                  </svg>
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-2 text-center">
+                  <div class="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700">
+                    <span class="text-[11px] text-slate-400 block">Κατηγορία AM & A1</span>
+                    <span class="text-sm font-mono font-bold text-cyan-300">3,5 μέτρα</span>
+                    <span class="text-[10px] text-slate-400 block">απόσταση κώνων</span>
+                  </div>
+                  <div class="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700">
+                    <span class="text-[11px] text-slate-400 block">Κατηγορία A2 & A</span>
+                    <span class="text-sm font-mono font-bold text-cyan-300">4,0 μέτρα</span>
+                    <span class="text-[10px] text-slate-400 block">απόσταση κώνων</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Crucial Note -->
+              <div class="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
+                ⚠️ <strong class="text-white">ΠΑΡΑΤΗΡΗΣΗ ΕΞΕΤΑΣΤΗ:</strong> Πουθενά μέσα στην πίστα δεν σηκώνουμε τα πέλματά μας από τα πατηράκια όσο οδηγούμε. Πόδι κάτω μπαίνει <em>μόνο</em> όταν ακινητοποιούμε το δίκυκλο!
+              </div>
+            </div>
+
+            <!-- The 6 Disqualification Rules -->
+            <div class="lg:col-span-7">
+              <h4 class="text-sm font-bold text-slate-200 mb-3 flex items-center space-x-2">
+                <span class="text-red-400">⛔</span>
+                <span>Οι 6 Κανόνες Αποτυχίας / Λάθη:</span>
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 flex items-center space-x-3">
+                  <span class="text-red-400 font-mono font-bold">1.</span>
+                  <span class="text-xs text-slate-200">Δεν σηκώνουμε τα πόδια από τα πατηράκια.</span>
+                </div>
+                <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 flex items-center space-x-3">
+                  <span class="text-red-400 font-mono font-bold">2.</span>
+                  <span class="text-xs text-slate-200">Δεν μας σβήνει ο κινητήρας.</span>
+                </div>
+                <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 flex items-center space-x-3">
+                  <span class="text-red-400 font-mono font-bold">3.</span>
+                  <span class="text-xs text-slate-200">Δεν πέφτουμε.</span>
+                </div>
+                <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 flex items-center space-x-3">
+                  <span class="text-red-400 font-mono font-bold">4.</span>
+                  <span class="text-xs text-slate-200">Δεν βάζουμε πόδι κάτω.</span>
+                </div>
+                <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 flex items-center space-x-3">
+                  <span class="text-red-400 font-mono font-bold">5.</span>
+                  <span class="text-xs text-slate-200">Δεν ακουμπάμε και δεν ρίχνουμε κώνο.</span>
+                </div>
+                <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 flex items-center space-x-3">
+                  <span class="text-red-400 font-mono font-bold">6.</span>
+                  <span class="text-xs text-slate-200">Δεν πατάμε τις πλευρικές λευκές γραμμές.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Γραμμή Βραδυπορίας (Αργή Γραμμή) -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+          <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-mono text-cyan-400 font-bold">ΑΣΚΗΣΗ 03</span>
+              <h3 class="text-lg font-bold text-white">Γραμμή Βραδυπορίας (Αργή Γραμμή)</h3>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono font-bold">≥ 15.00 δευτερόλεπτα</span>
+              <span class="text-xs px-2.5 py-1 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">Μέθοδος FIFO</span>
+            </div>
+          </div>
+
+          <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Τεχνικές Προδιαγραφές</h4>
+              <ul class="space-y-2 text-xs text-slate-300">
+                <li class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/70 border border-slate-800">
+                  <span class="text-slate-400">Ελεύθερα μέτρα στην αρχή:</span>
+                  <span class="font-mono font-bold text-cyan-300">3 μέτρα (για ισορροπία)</span>
+                </li>
+                <li class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/70 border border-slate-800">
+                  <span class="text-slate-400">Πλάτος διαδρόμου:</span>
+                  <span class="font-mono font-bold text-cyan-300">40 εκατοστά</span>
+                </li>
+                <li class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/70 border border-slate-800">
+                  <span class="text-slate-400">Μήκος διαδρόμου:</span>
+                  <span class="font-mono font-bold text-cyan-300">25 μέτρα</span>
+                </li>
+                <li class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/70 border border-slate-800">
+                  <span class="text-slate-400">Επιτρεπόμενη ταχύτητα:</span>
+                  <span class="font-mono font-bold text-cyan-300">1η ταχύτητα στο κιβώτιο</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- FIFO Method Card -->
+            <div class="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/30 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center space-x-2 text-cyan-400 text-xs font-bold uppercase mb-2">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Μέθοδος Μέτρησης FIFO (First In, First Out)</span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Ο χρόνος ξεκινά <strong class="text-white">μόλις πατήσει η μπροστινή ρόδα</strong> στην γραμμή εισόδου και σταματάει <strong class="text-white">μόλις βγει η μπροστινή ρόδα</strong> από τη γραμμή εξόδου.
+                </p>
+                <div class="mt-3 p-2.5 rounded-lg bg-cyan-950/60 border border-cyan-800/80 text-[11px] text-cyan-200">
+                  💡 <strong>Pro Tip:</strong> Χρησιμοποιήστε ελαφρύ πατινάρισμα του συμπλέκτη και ήπιο πάτημα πίσω φρένου για να διατηρήσετε απόλυτη σταθερότητα και να υπερβείτε τα 15''.
+                </div>
+              </div>
+              <button onclick="switchTab('simulator'); selectSlowLineSim()" class="mt-4 w-full py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition flex items-center justify-center space-x-2">
+                <span>⏱️ Άνοιγμα Χρονομέτρου Εξάσκησης 15''</span>
+              </button>
+            </div>
+
+            <!-- Rules of Slow Line -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Κανόνες Αποκλεισμού</h4>
+              <div class="space-y-1.5">
+                <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex items-center space-x-2">
+                  <span class="text-red-400 font-bold">✖</span>
+                  <span>Δεν βγαίνουμε από τη γραμμή (ούτε «λίγο»).</span>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex items-center space-x-2">
+                  <span class="text-red-400 font-bold">✖</span>
+                  <span>Δεν κάνουμε χρόνο λιγότερο από 15''.</span>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex items-center space-x-2">
+                  <span class="text-red-400 font-bold">✖</span>
+                  <span>Δεν μας σβήνει η μηχανή.</span>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex items-center space-x-2">
+                  <span class="text-red-400 font-bold">✖</span>
+                  <span>Δεν πέφτουμε.</span>
+                </div>
+                <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300 flex items-center space-x-2">
+                  <span class="text-red-400 font-bold">✖</span>
+                  <span>Δεν βάζουμε πόδια κάτω.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Επιτάχυνση με αλλαγές ταχυτήτων (1η - 2η) -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+          <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex items-center justify-between">
+            <div>
+              <span class="text-xs font-mono text-cyan-400 font-bold">ΑΣΚΗΣΗ 04</span>
+              <h3 class="text-lg font-bold text-white">Επιτάχυνση με Αλλαγές Ταχυτήτων (1η - 2η)</h3>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-mono">ΧΩΡΙΣ ΟΡΙΟ ΧΡΟΝΟΥ</span>
+          </div>
+
+          <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-3">
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span class="text-xs text-slate-400 block">Διαστάσεις Διαδρόμου:</span>
+                <span class="text-sm font-semibold text-white">3μ ελεύθερα + 40 εκατοστά πλάτος επί 50 μέτρα μήκος.</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span class="text-xs text-slate-400 block">Σωστή Εκτέλεση Ρυθμού:</span>
+                <p class="text-xs text-slate-300 mt-1">
+                  ΔΕΝ έχει χρόνο εκτέλεσης, άρα δεν τρέχουμε σαν να χάσαμε το αεροπλάνο! Μια λογική επιτάχυνση με την 1η να γεμίζει ελαφρά, αλλαγή σε 2η και λίγο γκαζάκι μέχρι τις βούλες.
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-900/40">
+                <span class="text-xs text-amber-400 font-bold block">Τελευταία 10 Μέτρα («Κύλιση»):</span>
+                <p class="text-xs text-slate-300 mt-1">
+                  Στις βούλες αφήνουμε το γκάζι για να «κυλίσει» τα τελευταία 10 μέτρα το δίκυκλο ελεύθερα.
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-red-950/20 border border-red-900/40 text-red-200 text-xs">
+                ⛔ <strong class="text-white">ΑΠΑΓΟΡΕΥΕΤΑΙ:</strong> Η χρήση φρένου μέσα στον διάδρομο επιτάχυνσης.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Επιτάχυνση με Αποφυγή Εμποδίου & 6. Φρενάρισμα Έκτακτης Ανάγκης (Grid comparison) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Αποφυγή Εμποδίου -->
+          <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+            <div class="p-4 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex justify-between items-center">
+              <div>
+                <span class="text-xs font-mono text-cyan-400 font-bold">ΑΣΚΗΣΗ 05</span>
+                <h3 class="text-base font-bold text-white">Επιτάχυνση με Αποφυγή Εμποδίου</h3>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">Χωνί & Εμπόδιο</span>
+            </div>
+            
+            <div class="p-5 space-y-3 text-xs text-slate-300">
+              <div class="grid grid-cols-2 gap-2">
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                  <span class="text-slate-400 block text-[11px]">Κατηγορία Α1</span>
+                  <span class="text-cyan-300 font-mono font-bold text-sm">8,50'' max</span>
+                  <span class="text-[10px] text-slate-400 block">55μ μήκος (1η & 2α)</span>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                  <span class="text-slate-400 block text-[11px]">Κατηγορία Α2 / Α</span>
+                  <span class="text-amber-300 font-mono font-bold text-sm">5,50'' max</span>
+                  <span class="text-[10px] text-slate-400 block">40μ μήκος (Μόνο 1η)</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1.5">
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span><strong>Πλάτος διαδρόμου:</strong> 2 μέτρα.</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span><strong>Κλείσιμο γκαζιού:</strong> Στα τελευταία 10μ (στις βούλες).</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span><strong>Έξοδος:</strong> Από τη διακεκομμένη χωρίς πάτημα γραμμών.</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span><strong>Εμπόδιο:</strong> 2 μέτρα εμπόδιο στα 7μ από την έξοδο.</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span><strong>Χωνί:</strong> Πλάτος εισόδου 4μ & πλάτος εξόδου 2μ.</span>
+                </div>
+              </div>
+
+              <div class="p-2 rounded bg-red-950/30 border border-red-900/40 text-red-300 text-[11px]">
+                ⚠️ Απαγορεύεται η χρήση φρένου μέσα στον διάδρομο επιτάχυνσης!
+              </div>
+            </div>
+          </div>
+
+          <!-- Φρενάρισμα Έκτακτης Ανάγκης -->
+          <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+            <div class="p-4 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex justify-between items-center">
+              <div>
+                <span class="text-xs font-mono text-cyan-400 font-bold">ΑΣΚΗΣΗ 06</span>
+                <h3 class="text-base font-bold text-white">Επιτάχυνση με Φρενάρισμα Ανάγκης</h3>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800">Ακινητοποίηση 20μ</span>
+            </div>
+
+            <div class="p-5 space-y-3 text-xs text-slate-300">
+              <div class="grid grid-cols-2 gap-2">
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                  <span class="text-slate-400 block text-[11px]">Χρόνος Α1</span>
+                  <span class="text-cyan-300 font-mono font-bold text-sm">8,50'' max</span>
+                  <span class="text-[10px] text-slate-400 block">55μ (1η & 2α)</span>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-center">
+                  <span class="text-slate-400 block text-[11px]">Χρόνος Α2 / Α</span>
+                  <span class="text-amber-300 font-mono font-bold text-sm">5,50'' max</span>
+                  <span class="text-[10px] text-slate-400 block">40μ (Μόνο 1η)</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-2">
+                <p>
+                  <strong>Σημείο έναρξης φρεναρίσματος:</strong> Ξεκινάμε το φρενάρισμα <strong>ανάμεσα στους δύο κώνους εξόδου και ΟΧΙ νωρίτερα</strong>!
+                </p>
+                <p>
+                  <strong>Όριο ακινητοποίησης:</strong> Σταματάμε στην τελευταία γραμμή μετά από <strong>20 μέτρα</strong>, χωρίς να πατήσουμε τη γραμμή.
+                </p>
+                <p>
+                  <strong>Κλείσιμο γκαζιού:</strong> Στα τελευταία 10 μέτρα (στις βούλες).
+                </p>
+              </div>
+
+              <div class="p-2 rounded bg-red-950/30 border border-red-900/40 text-red-300 text-[11px]">
+                ⚠️ Απαγορεύεται η χρήση φρένου μέσα στον διάδρομο επιτάχυνσης πριν τους 2 κώνους εξόδου!
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 7. Εγκατάλειψη Δικύκλου (6 Βήματα) -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+          <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono text-sm font-bold">ΒΗΜΑ 07</div>
+              <h3 class="text-lg font-bold text-white">Εγκατάλειψη Δικύκλου (6 Τελικά Βήματα)</h3>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">Ολοκλήρωση Πίστας</span>
+          </div>
+
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <p class="text-xs text-slate-300"><strong class="text-white">Φλας & Έλεγχος:</strong> Βγάζω αριστερό φλας, ελέγχω πάνω από τον αριστερό μου ώμο και σταματάω.</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <p class="text-xs text-slate-300"><strong class="text-white">Νεκρά & Σβήσιμο φλας:</strong> Βάζω νεκρά (Ν), σβήνω το φλας με τον αριστερό αντίχειρα.</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                <p class="text-xs text-slate-300"><strong class="text-white">Κλειδί με αριστερό:</strong> Γυρίζω το κλειδί (σβήνω μηχανή) με το <em class="text-amber-300">αριστερό μου χέρι</em> ώστε να φαίνεται η πράσινη ένδειξη της νεκράς στον εξεταστή!</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">4</span>
+                <p class="text-xs text-slate-300"><strong class="text-white">Κούμπωμα 1ης (Χωρίς συμπλέκτη):</strong> Βάζω 1η ταχύτητα χωρίς να πατάω συμπλέκτη και σπρώχνω εμπρός-πίσω να δω ότι μπλοκάρει (και να το δει ο εξεταστής).</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">5</span>
+                <p class="text-xs text-slate-300"><strong class="text-white">Πλαγιοστάτης & Κατέβασμα:</strong> Κατεβάζω πλαγιοστάτη, ελέγχω πάνω από τον αριστερό ώμο και κατεβαίνω.</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start space-x-3">
+                <span class="w-6 h-6 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">6</span>
+                <p class="text-xs text-slate-300"><strong class="text-white">Παράδοση κλειδιών:</strong> Παίρνω τα κλειδιά και τα πετάω στον δάσκαλό μου ώστε να φανεί και αυτό άλλη μία φορά στον εξεταστή!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SUB-SECTION 2: ΟΙ 12 ΕΛΕΓΧΟΙ ΔΙΚΥΚΛΟΥ -->
+      <div id="section-checks" class="space-y-6 pt-6">
+        <div class="flex items-center space-x-3 border-b border-moto-border pb-3">
+          <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm">2</span>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">Οι 12 Έλεγχοι Δικύκλου (4 + 4 + 4)</h2>
+            <p class="text-xs text-slate-400">Περιγραφή όλων των 12 ή απάντηση στις 3 από τις 4 ερωτήσεις του εξεταστή</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- GROUP 1: 4 ΠΕΡΙΜΕΤΡΙΚΟΙ -->
+          <div class="bg-moto-card rounded-2xl border border-moto-border p-5 space-y-4">
+            <div class="flex items-center space-x-2 text-cyan-400 font-bold border-b border-slate-800 pb-2">
+              <span class="px-2 py-0.5 rounded bg-cyan-950 text-xs font-mono">ΟΜΑΔΑ Α</span>
+              <span>4 Περιμετρικοί Έλεγχοι</span>
+            </div>
+
+            <!-- 1. Διαρροές 4 υγρών -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-cyan-400">1.</span>
+                <span>Διαρροές 4 Υγρών (Οπτικός Έλεγχος)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Οπτικός έλεγχος για διαρροές από: <strong>λάδια κινητήρα</strong>, <strong>ψυκτικό υγρό ή νερό</strong> (όχι σε Α1 & ΑΜ), <strong>βενζίνη</strong>, <strong>υγρά φρένων</strong> (το Α1/ΑΜ έχει υγρό φρένων μόνο μπροστά, πίσω έχει ταμπούρο άρα όχι υγρό), καθώς και <strong>λάδι αναρτήσεων</strong> (στις μπροστινές μπουκάλες).
+              </p>
+            </div>
+
+            <!-- 2. Στάθμες 4 υγρών -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-cyan-400">2.</span>
+                <span>Στάθμες 4 Υγρών (Κανόνας 4 Προϋποθέσεων)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Έλεγχος αντίστοιχων δοχείων στο <strong>maximum ή πάνω από τις γραμμούλες</strong>:
+                <br>α) Μοτοσυκλέτα σε <strong>όρθια θέση</strong>
+                <br>β) Σε <strong>επίπεδο δρόμο</strong>
+                <br>γ) Με <strong>σβηστό κινητήρα</strong>
+                <br>δ) Μετά από <strong>5 λεπτά (κρύος)</strong>.
+              </p>
+            </div>
+
+            <!-- 3. Αλυσίδα -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-cyan-400">3.</span>
+                <span>Αλυσίδα (Κίνηση σε Πίσω Τροχό)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                <strong>Τζόγος (κενό): 2-3 εκατοστά</strong> ώστε να αποσβένει βάρος συνεπιβάτη & ανωμαλίες (πολύ τεντωμένη μπορεί να σπάσει, πολύ χαλαρή να φύγει). Ελέγχουμε να είναι <strong>γρασαρισμένη</strong>, όχι σφηνωμένα ξένα σώματα (κλαδάκια/πετραδάκια) και χωρίς εμφανείς φθορές σε κρίκους/γρανάζι.
+              </p>
+            </div>
+
+            <!-- 4. Ελαστικά -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-cyan-400">4.</span>
+                <span>Ελαστικά (Πίεση & Φθορά)</span>
+              </h4>
+              <div class="text-[11px] text-slate-300 pl-4 space-y-1">
+                <p>• <strong>Μερική απώλεια</strong> (έλεγχος με πόδι) ➔ τσούλημα σε βενζινάδικο για αέρα.</p>
+                <p>• <strong>Ολική απώλεια</strong> (έλεγχος με μάτι) ➔ οδική βοήθεια / βουλκανιζατέρ.</p>
+                <p>• <strong>Βάθος πέλματος:</strong> Δείκτης TWI (1 χιλιοστό κατώτατο).</p>
+                <p>• <strong>Διαστάσεις (π.χ. 180/55/17):</strong> 180mm πλάτος / 55% ύψος-προφίλ / 17 ίντσες διάμετρος ζάντας (αν γράφει π.χ. 2.50-17 = 2.5 ίντσες πλάτος και ύψος).</p>
+                <p>• <strong>DOT (π.χ. 2921):</strong> 4 νούμερα σε οβάλ ➔ 29η εβδομάδα του 2021.</p>
+                <p>• <strong>Συντήρηση:</strong> Έλεγχος πίεσης 1 φορά/εβδομάδα, αλλαγή κάθε 4-5 χρόνια ή 20.000-25.000 χλμ.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- GROUP 2: 4 ΗΛΕΚΤΡΙΚΑ (3Φ + 1Κ) -->
+          <div class="bg-moto-card rounded-2xl border border-moto-border p-5 space-y-4">
+            <div class="flex items-center space-x-2 text-amber-400 font-bold border-b border-slate-800 pb-2">
+              <span class="px-2 py-0.5 rounded bg-amber-950 text-xs font-mono">ΟΜΑΔΑ Β</span>
+              <span>4 Ηλεκτρικά (3Φ + 1Κ)</span>
+            </div>
+
+            <!-- 1. Φώτα -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-amber-400">1.</span>
+                <span>Φώτα (Φ)</span>
+              </h4>
+              <ul class="text-[11px] text-slate-300 pl-4 space-y-0.5">
+                <li>• <strong>Θέσεως (μικρά):</strong> Δεν έχουν όλα τα δίκυκλα.</li>
+                <li>• <strong>Διασταυρώσεως (μεσαία):</strong> Εμβέλεια <strong>40 μέτρα</strong> εμπρός και πίσω.</li>
+                <li>• <strong>Πορείας (μεγάλα):</strong> Εμβέλεια <strong>100 μέτρα</strong> εμπρός και πίσω.</li>
+              </ul>
+            </div>
+
+            <!-- 2. Φλας -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-amber-400">2.</span>
+                <span>Φλας (Φ)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Δεξί & αριστερό, εμπρός και πίσω (οπτική επιβεβαίωση λειτουργίας των λαμπτήρων).
+              </p>
+            </div>
+
+            <!-- 3. Φρένα -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-amber-400">3.</span>
+                <span>Φρένα (Φ) - Λάμπα Stop</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Ελέγχουμε εάν <strong>ανάβει έντονα η πίσω λάμπα (stop)</strong> πατώντας ξεχωριστά το μπροστινό και το πίσω φρένο.
+              </p>
+            </div>
+
+            <!-- 4. Κόρνα -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-amber-400">4.</span>
+                <span>Κόρνα (Κ)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Ένα πάτημα ότι λειτουργεί. Υπενθύμιση: Χρήση <strong>ΜΟΝΟ σε έκτακτη ανάγκη</strong> (π.χ. αποφυγή άμεσου ατυχήματος ή μεταφορά τραυματία).
+              </p>
+            </div>
+
+            <div class="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200">
+              💡 <strong>Μνημονικός Κανόνας:</strong> <strong>3Φ + 1Κ</strong> = <strong>Φ</strong>ώτα, <strong>Φ</strong>λας, <strong>Φ</strong>ρένα + <strong>Κ</strong>όρνα!
+            </div>
+          </div>
+
+          <!-- GROUP 3: 4 ΕΦΑΡΜΟΓΕΣ ΕΠΑΝΩ ΣΤΟ ΟΧΗΜΑ -->
+          <div class="bg-moto-card rounded-2xl border border-moto-border p-5 space-y-4">
+            <div class="flex items-center space-x-2 text-emerald-400 font-bold border-b border-slate-800 pb-2">
+              <span class="px-2 py-0.5 rounded bg-emerald-950 text-xs font-mono">ΟΜΑΔΑ Γ</span>
+              <span>4 Εφαρμογές Επάνω στο Όχημα</span>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-red-950/30 border border-red-800 text-[11px] text-red-200 font-semibold">
+              ⚠️ ΠΡΟΣΟΧΗ: Υποχρεωτικά ΝΕΚΡΑ στο κιβώτιο & ΠΛΑΓΙΟΣΤΑΤΗΣ ΑΝΕΒΑΣΜΕΝΟΣ!
+            </div>
+
+            <!-- 1. Αναρτήσεις -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-emerald-400">1.</span>
+                <span>Αναρτήσεις (Εμπρός / Πίσω)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                • <strong>Εμπρός ανάρτηση:</strong> Άσκηση πίεσης με τα χέρια στο τιμόνι (μπουκάλες) έχοντας το μπροστινό φρένο πατημένο.
+                <br>• <strong>Πίσω ανάρτηση:</strong> Με πίεση (αναπήδηση) όπως καθόμαστε επάνω στη σέλα.
+              </p>
+            </div>
+
+            <!-- 2. Φρένα -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-emerald-400">2.</span>
+                <span>Φρένα (Δοκιμή Εν Κινήσει)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Έλεγχος εάν πιάνουν σωστά (ανεξάρτητα):
+                <br>• <strong>Εμπρός:</strong> Τσουλώντας προς τα εμπρός, το πατάμε και πάλι στη θέση μας.
+                <br>• <strong>Πίσω:</strong> Τσουλώντας επίσης εμπρός, πατάμε το ποδόφρενο και πάλι στη θέση μας.
+              </p>
+            </div>
+
+            <!-- 3. Τιμόνι -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-emerald-400">3.</span>
+                <span>Τιμόνι (Εύρος Στροφής)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Τερματισμός από άκρη σε άκρη (τέρμα αριστερά - τέρμα δεξιά), ανεμπόδιστη περιστροφή χωρίς μεταλλικούς τριγμούς και πιστή ακολουθία του τροχού.
+              </p>
+            </div>
+
+            <!-- 4. Καθρέπτες -->
+            <div class="space-y-1">
+              <h4 class="text-xs font-bold text-white flex items-center space-x-1.5">
+                <span class="text-emerald-400">4.</span>
+                <span>Καθρέπτες (Κανόνας Ρύθμισης)</span>
+              </h4>
+              <p class="text-[11px] text-slate-300 pl-4">
+                Ρύθμιση <strong class="text-white">ΜΕ ΤΟ ΑΝΤΙΘΕΤΟ ΧΕΡΙ</strong> (αριστερό χέρι για δεξιό καθρέπτη και αντίστροφα) και <strong class="text-amber-300">ΜΟΝΟ όταν είμαστε σε πλήρη στάση</strong>.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SUB-SECTION 3: Β' ΣΚΕΛΟΣ & ΠΙΘΑΝΕΣ ΕΡΩΤΗΣΕΙΣ ΕΞΕΤΑΣΤΗ -->
+      <div id="section-poreia" class="space-y-6 pt-6">
+        <div class="flex items-center space-x-3 border-b border-moto-border pb-3">
+          <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">3</span>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">Β' Σκέλος: Πορεία & Ερωτήσεις Εξεταστή</h2>
+            <p class="text-xs text-slate-400">Οδήγηση εκτός πίστας με όχημα συνοδείας & οι 8 κλασικές ερωτήσεις</p>
+          </div>
+        </div>
+
+        <!-- Road Exam Specs -->
+        <div class="p-4 rounded-xl bg-slate-900 border border-moto-border flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">📻</span>
+            <div>
+              <span class="text-xs text-slate-400 block font-bold">Β' ΣΚΕΛΟΣ - ΟΔΗΓΗΣΗ ΕΚΤΟΣ ΠΙΣΤΑΣ:</span>
+              <p class="text-xs text-slate-200">Συνέχεια με ενδοεπικοινωνία μεταξύ εξεταστή και εξεταζόμενου. <strong>Αναμμένα φώτα</strong>, <strong>κατεβασμένη ζελατίνα</strong> όπως στην πίστα, και απόλυτη τήρηση του <strong>Κ.Ο.Κ.</strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 Questions Accordion / Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Q1: Έγγραφα & ΚΤΕΟ -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.01</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Έγγραφα Οχήματος & Προθεσμίες ΚΤΕΟ</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  <strong>Έγγραφα:</strong> Άδεια κυκλοφορίας, άδεια οδήγησης (δίπλωμα), ασφάλεια, απόδειξη τελών κυκλοφορίας, δελτίο ΚΤΕΟ.
+                </p>
+                <div class="mt-2 p-2 rounded bg-slate-900 border border-slate-800 text-[11px] text-cyan-200 font-mono">
+                  📅 <strong>ΚΤΕΟ:</strong> Καινούργιο όχημα ➔ <strong>4 χρόνια απαλλαγή</strong>. Μετά περνάμε ανά 2 χρόνια (4°, 6°, 8° χρόνο κ.ο.κ.).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q2: Νεκρή Γωνία -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.02</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Νεκρή Γωνία Οχήματος & Έλεγχος</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  Ο χώρος που <strong>δεν φαίνεται</strong> από τους καθρέπτες (πίσω δεξιά και αριστερά όπως καθόμαστε στο δίκυκλο).
+                </p>
+                <div class="mt-2 p-2 rounded bg-slate-900 border border-slate-800 text-[11px] text-amber-200">
+                  👀 <strong>Απαραίτητη ενέργεια:</strong> Γύρισμα κεφαλιού σε <strong>ΚΑΘΕ ΕΛΙΓΜΟ</strong> και με χρήση φλας (ιδίως κατά την έξοδο στην πορεία)!
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q3: Ενδυμασία Αναβάτη -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.03</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Ενδυμασία & Εξοπλισμός Ασφαλείας</h4>
+                <ul class="text-xs text-slate-300 mt-1 space-y-1">
+                  <li>• <strong>Τζάκετ & παντελόνι:</strong> Δέρμα ή αντιτριβικό ύφασμα <em>Cordura</em>.</li>
+                  <li>• <strong>Προστατευτικά:</strong> Ώμοι, αγκώνες, πλάτη, γοφοί, γόνατα.</li>
+                  <li>• <strong>Γάντια & Μπότες:</strong> Όχι πάνινα παπούτσια! Μπότες που καλύπτουν τον αστράγαλο με αντιολισθητικό πάτο.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q4: Κράνος -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.04</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Κράνος: Προδιαγραφές & Χαρακτηριστικά</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  Εγκεκριμένου τύπου, <strong>full-face</strong> (κλειστό) ή <strong>flip-up</strong> (σπαστό). <span class="text-red-400 font-semibold">ΟΧΙ ανοιχτού τύπου jet</span>.
+                </p>
+                <div class="mt-2 text-[11px] text-slate-400 space-y-0.5">
+                  <p>• Εφαρμογή καλά στο κεφάλι, καθαρή ζελατίνα χωρίς γρατσουνιές.</p>
+                  <p>• Ανοιχτόχρωμο με γραφικά για ορατότητα, <strong class="text-slate-200">ΟΧΙ αυτοκόλλητα</strong>.</p>
+                  <p>• Λουράκι: δεμένο ώστε να απέχει <strong>ένα δάχτυλο από τον λαιμό</strong>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q5: Όργανα & Κόκκινος Διακόπτης (Kill Switch) -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.05</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Όργανα & Κόκκινος Διακόπτης Έκτακτης Ανάγκης</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  <strong>Ταχύμετρο:</strong> km/h | <strong>Στροφόμετρο:</strong> στροφές x1000 rpm.
+                </p>
+                <div class="mt-2 p-2 rounded bg-red-950/40 border border-red-800 text-[11px] text-red-200">
+                  🔴 <strong>Kill Switch:</strong> Κόβει <strong>ΜΟΝΟ</strong> το ρεύμα λειτουργίας του κινητήρα (π.χ. σε κόλλημα γκαζιού, πτώση, διαρροή βενζίνης) ενώ <strong>αφήνει τα φώτα, κόρνα και ηλεκτρικά να δουλεύουν κανονικά</strong>.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q6: Στοιχεία Κλοπής -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.06</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">3 Εξωτερικά Αναγνωριστικά Κλοπής</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  Σε περίπτωση κλοπής χρησιμοποιούμε ως αναγνωριστικά:
+                </p>
+                <div class="mt-2 flex flex-wrap gap-1.5 font-mono text-xs">
+                  <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-cyan-300">1. Αριθμός Πλαισίου (VIN)</span>
+                  <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-cyan-300">2. Πινακίδα Κυκλοφορίας</span>
+                  <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-cyan-300">3. Χρώμα Οχήματος</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q7: Φάλαγγα / Κόμβοι Μοτοσυκλετών -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.07</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Κόμβοι (Φάλαγγα) Διαφορετικών Δικύκλων</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  Όταν κινούμαστε σε σχηματισμό ή κομβόι μοτοσυκλετών με διαφορετικές ιπποδυνάμεις και εμπειρίες:
+                </p>
+                <div class="mt-2 p-2 rounded bg-slate-900 border border-cyan-800 text-[11px] text-cyan-300 font-semibold">
+                  🏍️ <strong>Κανόνας:</strong> Ηγείται (μπροστά) <strong>ΠΑΝΤΑ Ο ΠΙΟ ΑΡΓΟΣ</strong> για να διατηρείται ενιαίος και ασφαλής ο ρυθμός.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q8: Φρενάρισμα Έκτακτης Ανάγκης & Ποσοστά (75% - 25%) -->
+          <div class="p-4 rounded-xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition">
+            <div class="flex items-start space-x-3">
+              <span class="text-cyan-400 font-mono font-bold text-sm">ΕΡ.08</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Φρενάρισμα Ανάγκης & Κατανομή (75% / 25%)</h4>
+                <p class="text-xs text-slate-300 mt-1">
+                  Πατάμε και τα δύο φρένα ταυτόχρονα και ισόποσα (με μια μικρή έμφαση στο πίσω φρένο αρχικά) ώστε να σταματήσει χωρίς να μπλοκάρουν οι τροχοί.
+                </p>
+                <div class="mt-2 p-2 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-300 space-y-1">
+                  <div>• <strong>Μπροστινό σύστημα: 75%</strong> (λόγω βύθισης το βάρος φεύγει μπροστά).</div>
+                  <div>• <strong>Πίσω σύστημα: 25%</strong> (το πίσω μέρος ουσιαστικά ελαφρώνει/σηκώνεται).</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: FLASHCARDS (ΕΞΥΠΝΕΣ ΚΑΡΤΕΣ) -->
+    <!-- ========================================== -->
+    <section id="tab-flashcards" class="tab-content hidden space-y-6">
+      
+      <!-- Flashcards Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-moto-card p-5 rounded-2xl border border-moto-border">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+            <span>🗂️</span>
+            <span>Έξυπνες Κάρτες Επανάληψης (Flashcards)</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Κάντε κλικ στην κάρτα για να δείτε την απάντηση. Σημειώστε ποιες έχετε εμπεδώσει!</p>
+        </div>
+
+        <!-- Filters & Category -->
+        <div class="flex items-center space-x-2">
+          <select id="flashcard-category" onchange="filterFlashcards()" class="bg-slate-900 border border-moto-border text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
+            <option value="all">Όλες οι Θεματικές (24)</option>
+            <option value="pista">Α' Σκέλος: Πίστα</option>
+            <option value="checks">12 Έλεγχοι Δικύκλου</option>
+            <option value="questions">Πορεία & Ερωτήσεις</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Flashcard Interactive Deck -->
+      <div class="max-w-xl mx-auto">
+        
+        <!-- Card Indicator & Progress -->
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-3 px-1">
+          <span id="card-counter" class="font-mono font-bold text-cyan-400">Κάρτα 1 από 24</span>
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+            <span id="learned-counter" class="text-emerald-300 font-semibold font-mono">0 Μαθημένες</span>
+          </div>
+        </div>
+
+        <!-- 3D Flip Card Container -->
+        <div id="flashcard-container" onclick="flipCurrentCard()" class="perspective-1000 w-full h-80 sm:h-96 cursor-pointer select-none">
+          <div id="flashcard-inner" class="relative w-full h-full duration-500 transform-style-3d rounded-3xl shadow-2xl">
+            
+            <!-- Front Face (Question) -->
+            <div class="absolute inset-0 w-full h-full backface-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-moto-card to-slate-950 p-6 sm:p-8 border-2 border-moto-border flex flex-col justify-between hover:border-cyan-500/50 transition">
+              <div class="flex items-center justify-between">
+                <span id="card-badge" class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">ΠΙΣΤΑ</span>
+                <span class="text-xs text-slate-500 flex items-center space-x-1">
+                  <span>🔄 Κλικ για αναστροφή</span>
+                </span>
+              </div>
+
+              <div class="my-auto text-center px-4">
+                <p id="card-question" class="text-lg sm:text-xl font-bold text-white leading-relaxed">
+                  Ποιες είναι οι αποστάσεις των 7 κώνων στην ελικοειδή διαδρομή (Slalom);
+                </p>
+              </div>
+
+              <div class="text-center text-[11px] text-slate-400 border-t border-slate-800 pt-3">
+                💡 Σκεφτείτε την απάντηση πριν γυρίσετε την κάρτα
+              </div>
+            </div>
+
+            <!-- Back Face (Answer) -->
+            <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl bg-gradient-to-br from-slate-950 via-moto-card to-cyan-950/40 p-6 sm:p-8 border-2 border-cyan-500/60 flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">ΑΠΑΝΤΗΣΗ</span>
+                <span class="text-xs text-slate-400">🔄 Κλικ για επαναφορά</span>
+              </div>
+
+              <div class="my-auto text-center px-2 sm:px-4">
+                <div id="card-answer" class="text-sm sm:text-base text-slate-200 leading-relaxed font-medium">
+                  Στην κατηγορία <strong>ΑΜ και Α1: 3,5 μέτρα</strong>. Στην κατηγορία <strong>Α2 και Α: 4 μέτρα</strong>. Εκτελείται με 1η ταχύτητα!
+                </div>
+              </div>
+
+              <div class="text-center text-[11px] text-cyan-400/80 border-t border-slate-800 pt-3 font-mono">
+                Επίσημη Θεωρία Εξετάσεων
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Card Action Controls -->
+        <div class="mt-6 flex items-center justify-between gap-3">
+          <button onclick="prevFlashcard()" class="p-3 rounded-2xl bg-moto-card border border-moto-border hover:border-slate-600 text-slate-300 hover:text-white transition flex items-center space-x-1">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <span class="text-xs font-bold hidden sm:inline">Προηγούμενη</span>
+          </button>
+
+          <div class="flex items-center space-x-3">
+            <button onclick="markAsNeedReview()" class="px-4 py-2.5 rounded-2xl bg-amber-950/60 hover:bg-amber-900 border border-amber-800/80 text-amber-300 text-xs font-bold transition flex items-center space-x-1.5">
+              <span>⚠️</span>
+              <span>Επανάληψη</span>
+            </button>
+            <button onclick="markAsLearned()" class="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-900/30 flex items-center space-x-1.5">
+              <span>✓</span>
+              <span>Το Έμαθα!</span>
+            </button>
+          </div>
+
+          <button onclick="nextFlashcard()" class="p-3 rounded-2xl bg-moto-card border border-moto-border hover:border-slate-600 text-slate-300 hover:text-white transition flex items-center space-x-1">
+            <span class="text-xs font-bold hidden sm:inline">Επόμενη</span>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: QUIZ ΕΞΕΤΑΣΕΩΝ (INTERACTIVE QUIZ) -->
+    <!-- ========================================== -->
+    <section id="tab-quiz" class="tab-content hidden space-y-6">
+      
+      <div class="max-w-3xl mx-auto">
+        
+        <!-- Quiz Intro & Dashboard Card -->
+        <div id="quiz-start-screen" class="bg-moto-card rounded-3xl border border-moto-border p-6 sm:p-10 text-center space-y-6">
+          <div class="w-20 h-20 mx-auto rounded-3xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-4xl shadow-xl shadow-cyan-500/10">
+            🎯
+          </div>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Προσομοιωτής Θεωρητικού Τεστ Εξετάσεων</h2>
+            <p class="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
+              20 στοχευμένες ερωτήσεις πολλαπλής επιλογής βασισμένες ακριβώς στις σημειώσεις: Πίστα, 12 Έλεγχοι (4+4+4), Πορεία και ερωτήσεις εξεταστή.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 max-w-md mx-auto text-center font-mono">
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <span class="text-xs text-slate-400 block font-sans">Ερωτήσεις</span>
+              <span class="text-base font-bold text-cyan-300">20</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <span class="text-xs text-slate-400 block font-sans">Βάση</span>
+              <span class="text-base font-bold text-amber-300">85%</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <span class="text-xs text-slate-400 block font-sans">Αιτιολόγηση</span>
+              <span class="text-base font-bold text-emerald-300">Άμεση</span>
+            </div>
+          </div>
+
+          <button onclick="startQuiz()" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm tracking-wide shadow-xl shadow-cyan-500/25 transition">
+            ΕΝΑΡΞΗ ΤΕΣΤ ΕΞΕΤΑΣΕΩΝ
+          </button>
+        </div>
+
+        <!-- Active Quiz Question Interface -->
+        <div id="quiz-question-screen" class="hidden space-y-5">
+          <!-- Question Progress Bar -->
+          <div class="bg-moto-card p-4 rounded-2xl border border-moto-border flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="text-xs font-mono font-bold text-cyan-400" id="quiz-q-num">ΕΡΩΤΗΣΗ 1 / 20</span>
+              <span id="quiz-q-tag" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">ΠΙΣΤΑ</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-400 font-mono">Σκορ:</span>
+              <span id="quiz-live-score" class="text-xs font-mono font-bold text-emerald-400">0</span>
+            </div>
+          </div>
+
+          <!-- Question Content -->
+          <div class="bg-moto-card rounded-3xl border border-moto-border p-6 sm:p-8 space-y-6">
+            <h3 id="quiz-q-text" class="text-lg sm:text-xl font-bold text-white leading-snug">
+              Ποιο είναι το πρώτο απαραίτητο βήμα στο τσούλημα του δικύκλου;
+            </h3>
+
+            <!-- Options Container -->
+            <div id="quiz-options" class="space-y-3">
+              <!-- Dynamically populated buttons -->
+            </div>
+
+            <!-- Feedback & Explanation Box -->
+            <div id="quiz-feedback-box" class="hidden p-4 rounded-2xl border text-xs sm:text-sm leading-relaxed transition-all">
+              <div id="quiz-feedback-title" class="font-bold mb-1 flex items-center space-x-1.5"></div>
+              <p id="quiz-feedback-text" class="text-slate-300"></p>
+            </div>
+
+            <!-- Next Button -->
+            <div class="flex justify-end pt-2">
+              <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition">
+                Επόμενη Ερώτηση →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quiz Result Screen -->
+        <div id="quiz-result-screen" class="hidden bg-moto-card rounded-3xl border border-moto-border p-6 sm:p-10 text-center space-y-6">
+          <div id="quiz-result-icon" class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-4xl shadow-xl">
+            🏆
+          </div>
+
+          <div>
+            <h2 id="quiz-result-title" class="text-2xl sm:text-3xl font-extrabold text-white">Αποτέλεσμα</h2>
+            <p id="quiz-result-subtitle" class="text-sm text-slate-300 mt-2">Συγχαρητήρια για την προσπάθεια!</p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 max-w-sm mx-auto">
+            <span class="text-xs text-slate-400 block">Τελικό Ποσοστό Επιτυχίας</span>
+            <div id="quiz-result-percentage" class="text-4xl font-mono font-black text-cyan-400 my-1">95%</div>
+            <span id="quiz-result-fraction" class="text-xs font-mono text-slate-400">19 / 20 Σωστές Απαντήσεις</span>
+          </div>
+
+          <div class="flex justify-center gap-3">
+            <button onclick="startQuiz()" class="px-6 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition">
+              🔄 Επανάληψη Τεστ
+            </button>
+            <button onclick="switchTab('matrix')" class="px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+              ⚡ Δες το Σκονάκι Αριθμών
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: ΕΡΓΑΣΤΗΡΙΟ ΠΙΣΤΑΣ (SIMULATOR & TIMERS) -->
+    <!-- ========================================== -->
+    <section id="tab-simulator" class="tab-content hidden space-y-8">
+      
+      <!-- Top banner -->
+      <div class="bg-moto-card rounded-2xl border border-moto-border p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+            <span>⏱️</span>
+            <span>Εργαστήριο Πίστας & Διαδραστικά Χρονόμετρα</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Εξασκήσου στην ακριβή αίσθηση του χρόνου για τη Βραδυπορία (15'') και την Αποφυγή/Φρενάρισμα (8.50'' / 5.50'').</p>
+        </div>
+      </div>
+
+      <!-- TIMER 1: ΧΡΟΝΟΜΕΤΡΟ ΒΡΑΔΥΠΟΡΙΑΣ 15'' (FIFO) -->
+      <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+        <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 font-mono text-sm font-bold">FIFO</span>
+            <div>
+              <h3 class="text-base font-bold text-white">Προσομοιωτής Χρόνου Βραδυπορίας (Αργή Γραμμή)</h3>
+              <p class="text-xs text-slate-400">Στόχος: Ο χρόνος πρέπει να είναι <strong>ΤΟΥΛΑΧΙΣΤΟΝ 15.00 δευτερόλεπτα</strong></p>
+            </div>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded bg-slate-800 text-cyan-300 font-mono">Μήκος: 25μ | Πλάτος: 40εκ</span>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          
+          <!-- Stopwatch Display -->
+          <div class="md:col-span-6 flex flex-col items-center justify-center p-6 bg-slate-950 rounded-2xl border border-slate-800">
+            <span class="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">Χρόνος Διέλευσης Τροχού</span>
+            <div id="slow-timer-display" class="font-mono text-5xl sm:text-6xl font-black text-cyan-400 tracking-wider">
+              00.00''
+            </div>
+
+            <!-- Progress Bar toward 15s -->
+            <div class="w-full bg-slate-800 h-3 rounded-full mt-4 overflow-hidden">
+              <div id="slow-timer-progress" class="bg-cyan-500 h-full transition-all duration-75" style="width: 0%"></div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div id="slow-timer-status" class="mt-3 text-xs font-mono font-bold text-slate-400">
+              Πατήστε «ΕΙΣΟΔΟΣ ΤΡΟΧΟΥ» μόλις πατήσει ο μπροστινός τροχός
+            </div>
+          </div>
+
+          <!-- Controls & Instructions -->
+          <div class="md:col-span-6 space-y-4">
+            <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-1.5">
+              <p>1. Πατήστε <strong class="text-cyan-400">«ΕΙΣΟΔΟΣ ΜΠΡΟΣΤΙΝΟΥ ΤΡΟΧΟΥ»</strong> μόλις υποθετικά πατάτε τη γραμμή έναρξης.</p>
+              <p>2. Πατήστε <strong class="text-amber-400">«ΕΞΟΔΟΣ ΜΠΡΟΣΤΙΝΟΥ ΤΡΟΧΟΥ»</strong> μόλις υποθετικά βγαίνει η ρόδα.</p>
+              <p>3. Εάν ο χρόνος είναι &lt; 15.00 δευτερόλεπτα = <strong>ΑΠΟΤΥΧΙΑ</strong>. Εάν &ge; 15.00 δευτερόλεπτα = <strong>ΕΠΙΤΥΧΙΑ</strong>!</p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button id="slow-timer-start-btn" onclick="toggleSlowTimer()" class="flex-1 py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition shadow-lg shadow-cyan-600/20">
+                🏁 ΕΙΣΟΔΟΣ ΜΠΡΟΣΤΙΝΟΥ ΤΡΟΧΟΥ
+              </button>
+              <button onclick="resetSlowTimer()" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+                Επαναφορά
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TIMER 2: ΧΡΟΝΟΜΕΤΡΟ ΑΠΟΦΥΓΗΣ & ΦΡΕΝΑΡΙΣΜΑΤΟΣ (8.50'' / 5.50'') -->
+      <div class="bg-moto-card rounded-2xl border border-moto-border overflow-hidden">
+        <div class="p-5 bg-gradient-to-r from-slate-900 to-moto-card border-b border-moto-border flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <span class="p-2 rounded-xl bg-amber-500/10 text-amber-400 font-mono text-sm font-bold">SPEED</span>
+            <div>
+              <h3 class="text-base font-bold text-white">Χρονόμετρο Αποφυγής Εμποδίου & Έκτακτης Ανάγκης</h3>
+              <p class="text-xs text-slate-400">Μέγιστος επιτρεπόμενος χρόνος διαδρομής</p>
+            </div>
+          </div>
+
+          <!-- Category Selector -->
+          <div class="flex items-center space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <button id="cat-btn-a1" onclick="setSpeedCategory('A1')" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-600 text-white">Α1 (8.50'')</button>
+            <button id="cat-btn-a2" onclick="setSpeedCategory('A2')" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white">Α2 / Α (5.50'')</button>
+          </div>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          
+          <div class="md:col-span-6 flex flex-col items-center justify-center p-6 bg-slate-950 rounded-2xl border border-slate-800">
+            <div class="flex items-center space-x-2 text-xs font-mono text-slate-400 mb-1">
+              <span>ΟΡΙΟ:</span>
+              <span id="speed-target-label" class="text-amber-400 font-bold">8.50 δευτερόλεπτα</span>
+            </div>
+
+            <div id="speed-timer-display" class="font-mono text-5xl sm:text-6xl font-black text-amber-400 tracking-wider">
+              00.00''
+            </div>
+
+            <div id="speed-timer-status" class="mt-3 text-xs font-mono font-bold text-slate-400">
+              Έτοιμοι για εκκίνηση
+            </div>
+          </div>
+
+          <div class="md:col-span-6 space-y-4">
+            <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+              <span class="text-white font-bold block mb-1">Κανόνας Χρόνου:</span>
+              Πρέπει να ολοκληρώσετε τη διαδρομή <strong>κάτω από το όριο</strong> (χωρίς φρένο μέσα στον διάδρομο επιτάχυνσης και κλείνοντας το γκάζι στις βούλες των 10μ).
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button id="speed-timer-btn" onclick="toggleSpeedTimer()" class="flex-1 py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition shadow-lg shadow-amber-600/20">
+                🚀 ΕΚΚΙΝΗΣΗ ΔΙΑΔΡΟΜΗΣ
+              </button>
+              <button onclick="resetSpeedTimer()" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+                Επαναφορά
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- INTERACTIVE CHECKLISTS: ΤΣΟΥΛΗΜΑ & ΕΓΚΑΤΑΛΕΙΨΗ -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Checklist: Τσούλημα 9 Βήματα -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                <span>📋</span>
+                <span>Checklist: Τσούλημα (9 Βήματα)</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">Τσεκάρετε καθώς εκτελείτε τα βήματα στην προπόνηση</p>
+            </div>
+            <button onclick="resetChecklist('roll')" class="text-[11px] text-slate-400 hover:text-cyan-400">Καθαρισμός</button>
+          </div>
+
+          <div id="checklist-roll-container" class="space-y-2">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Checklist: Εγκατάλειψη 6 Βήματα -->
+        <div class="bg-moto-card rounded-2xl border border-moto-border p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                <span>📋</span>
+                <span>Checklist: Εγκατάλειψη (6 Βήματα)</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">Απομνημόνευση της σωστής τελικής ρουτίνας</p>
+            </div>
+            <button onclick="resetChecklist('leave')" class="text-[11px] text-slate-400 hover:text-cyan-400">Καθαρισμός</button>
+          </div>
+
+          <div id="checklist-leave-container" class="space-y-2">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: ΣΚΟΝΑΚΙ ΑΡΙΘΜΩΝ & ΜΕΓΕΘΩΝ (MATRIX) -->
+    <!-- ========================================== -->
+    <section id="tab-matrix" class="tab-content hidden space-y-6">
+      
+      <!-- Search & Header -->
+      <div class="bg-moto-card p-6 rounded-2xl border border-moto-border space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+              <span>⚡</span>
+              <span>Σκονάκι Αριθμών, Αποστάσεων & Προδιαγραφών</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Όλοι οι κρίσιμοι αριθμοί των εξετάσεων σε έναν γρήγορο πίνακα αναζήτησης.</p>
+          </div>
+
+          <!-- Instant Search Input -->
+          <div class="relative w-full md:w-72">
+            <input type="text" id="matrix-search" oninput="searchMatrix()" placeholder="Αναζήτηση (π.χ. 15, κώνοι, KTEO)..." class="w-full bg-slate-900 border border-moto-border rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-500 transition pl-9">
+            <svg class="w-4 h-4 text-slate-500 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Matrix Grid -->
+      <div id="matrix-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Matrix items populated via JS -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- NOTIFICATION TOAST CONTAINER -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900/95 border border-cyan-500/50 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 backdrop-blur-md">
+      <span id="toast-icon">✨</span>
+      <span id="toast-msg" class="text-xs font-semibold">Μήνυμα</span>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-moto-border bg-moto-card/50 py-6">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 space-y-2">
+      <p>Εκπαιδευτική Εφαρμογή Υποψηφίων Οδηγών Μοτοσυκλέτας • Σχολή Οδηγών Θεωρία & Πίστα</p>
+      <p class="text-[11px] text-slate-400">Περιέχει: Τσούλημα, Slalom, Βραδυπορία, Επιτάχυνση, Αποφυγή, 12 Ελέγχους (4+4+4), Πορεία & ΚΟΚ.</p>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    /* ====================================================================
+       AUDIO SYNTHESIZER (Web Audio API - No external files required)
+       ==================================================================== */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn('Audio not allowed yet', e);
+      }
+    }
+
+    function playSuccessSound() {
+      playTone(523.25, 'sine', 0.1);
+      setTimeout(() => playTone(659.25, 'sine', 0.15), 100);
+      setTimeout(() => playTone(783.99, 'sine', 0.25), 200);
+    }
+
+    function playErrorSound() {
+      playTone(220, 'sawtooth', 0.15);
+      setTimeout(() => playTone(180, 'sawtooth', 0.25), 150);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-icon-on').classList.toggle('hidden', !soundEnabled);
+      document.getElementById('sound-icon-off').classList.toggle('hidden', soundEnabled);
+      showToast(soundEnabled ? 'Ήχοι ενεργοποιήθηκαν' : 'Ήχοι απενεργοποιήθηκαν', soundEnabled ? '🔊' : '🔇');
+    }
+
+    /* ====================================================================
+       TOAST NOTIFICATION HELPER (Replaces alert())
+       ==================================================================== */
+    function showToast(msg, icon = '🏍️') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = msg;
+      document.getElementById('toast-icon').innerText = icon;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    /* ====================================================================
+       TAB MANAGEMENT
+       ==================================================================== */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('active', 'bg-cyan-950/70', 'text-cyan-300', 'border-cyan-500/40', 'shadow-sm');
+        el.classList.add('text-slate-400', 'border-transparent');
+      });
+
+      const targetSection = document.getElementById(`tab-${tabId}`);
+      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (targetSection) targetSection.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.add('active', 'bg-cyan-950/70', 'text-cyan-300', 'border-cyan-500/40', 'shadow-sm');
+        targetBtn.classList.remove('text-slate-400', 'border-transparent');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      playTone(440, 'triangle', 0.05);
+    }
+
+    /* ====================================================================
+       DATA: FLASHCARDS (24 High Yield Flashcards)
+       ==================================================================== */
+    const flashcardsData = [
+      {
+        cat: 'pista',
+        badge: 'ΤΣΟΥΛΗΜΑ',
+        q: 'Ποιο είναι το 1ο βήμα στο τσούλημα του δικύκλου και πώς ρυθμίζεται;',
+        a: 'Κατέβασμα της ζελατίνας του κράνους, αφήνοντας άδεια για ένα μόνο δάχτυλο άνοιγμα (για εξαερισμό).'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΤΣΟΥΛΗΜΑ',
+        q: 'Πού στηρίζουμε υποχρεωτικά το δίκυκλο με τον πλαγιοστάτη κατά το τσούλημα;',
+        a: 'Στη γραμμή εκκίνησης, αφού έχουμε τσουλήσει για 10 μέτρα με τα δύο χέρια στο τιμόνι.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΤΣΟΥΛΗΜΑ',
+        q: 'Τι συμβαίνει εάν βάλουμε μπροστά τη μηχανή με τον πλαγιοστάτη κατεβασμένο και κουμπώσουμε 1η ταχύτητα;',
+        a: 'Ο κινητήρας θα σβήσει αυτόματα για λόγους ασφαλείας μέσω του διακόπτη του σταντ!'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΣΛΑΛΟΜ',
+        q: 'Πόσοι είναι οι κώνοι στην ελικοειδή διαδρομή και ποιες οι αποστάσεις τους;',
+        a: 'Είναι 7 κώνοι σε ευθεία γραμμή. Αποστάσεις: AM & A1 = 3,5 μέτρα | A2 & A = 4 μέτρα. Εκτέλεση με 1η ταχύτητα.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΣΛΑΛΟΜ',
+        q: 'Πότε επιτρέπεται να σηκώσουμε τα πέλματα από τα πατηράκια μέσα στην πίστα;',
+        a: 'ΠΟΥΘΕΝΑ κατά την οδήγηση! Πόδι κάτω μπαίνει μόνο όταν ακινητοποιούμε πλήρως το δίκυκλο.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΒΡΑΔΥΠΟΡΙΑ',
+        q: 'Ποιες είναι οι διαστάσεις της αργής γραμμής και ποιος ο ελάχιστος χρόνος;',
+        a: '3 μέτρα ελεύθερα στην αρχή, 40 εκατοστά πλάτος, 25 μέτρα μήκος. Ελάχιστος χρόνος: 15.00 δευτερόλεπτα.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΒΡΑΔΥΠΟΡΙΑ',
+        q: 'Πώς ορίζεται η μέθοδος μέτρησης χρόνου FIFO στη βραδυπορία;',
+        a: 'Ο χρόνος ξεκινά μόλις πατήσει η μπροστινή ρόδα στη γραμμή και σταματάει μόλις βγει η μπροστινή ρόδα (First In, First Out).'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΕΠΙΤΑΧΥΝΣΗ',
+        q: 'Ποιο είναι το όριο χρόνου στην επιτάχυνση με αλλαγή 1ης - 2ας ταχύτητας (50μ);',
+        a: 'ΔΕΝ έχει όριο χρόνου! Επιταχύνουμε λογικά χωρίς υπερβολές, αφήνουμε γκάζι στις βούλες (10μ κύλιση) και ΔΕΝ πατάμε φρένο.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΑΠΟΦΥΓΗ',
+        q: 'Ποιοι είναι οι μέγιστοι χρόνοι στην αποφυγή εμποδίου για Α1 και για Α2/Α;',
+        a: 'Α1: 8,50'' (μήκος 55μ, χρήση 1ης & 2ας) | Α2 & Α: 5,50'' (μήκος 40μ, χρήση ΜΟΝΟ 1ης ταχύτητας).'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΑΠΟΦΥΓΗ',
+        q: 'Πού βρίσκεται το εμπόδιο και ποιες οι διαστάσεις του «χωνιού» εισόδου;',
+        a: 'Το εμπόδιο 2μ βρίσκεται στα 7 μέτρα από την έξοδο του διαδρόμου. Το χωνί έχει είσοδο 4μ και έξοδο 2μ.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΦΡΕΝΑΡΙΣΜΑ',
+        q: 'Πού ξεκινάμε το φρενάρισμα έκτακτης ανάγκης στην πίστα και πού σταματάμε;',
+        a: 'Ξεκινάμε ανάμεσα στους δύο κώνους εξόδου (ΟΧΙ νωρίτερα) και σταματάμε εντός 20 μέτρων πριν την τελευταία γραμμή.'
+      },
+      {
+        cat: 'pista',
+        badge: 'ΕΓΚΑΤΑΛΕΙΨΗ',
+        q: 'Πώς σβήνουμε τη μηχανή και τι ταχύτητα κουμπώνουμε στην εγκατάλειψη;',
+        a: 'Σβήνουμε το κλειδί με το αριστερό χέρι (να φαίνεται η νεκρά) και βάζουμε 1η ταχύτητα ΧΩΡΙΣ συμπλέκτη για να μπλοκάρει ο τροχός!'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΠΕΡΙΜΕΤΡΙΚΟΙ',
+        q: 'Ποια είναι τα 4 υγρά που ελέγχουμε για πιθανές διαρροές;',
+        a: '1) Λάδια κινητήρα, 2) Ψυκτικό υγρό/νερό (όχι σε Α1/ΑΜ), 3) Βενζίνη, 4) Υγρά φρένων (και λάδι στις μπουκάλες αναρτήσεων).'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΠΕΡΙΜΕΤΡΙΚΟΙ',
+        q: 'Ποιες είναι οι 4 προϋποθέσεις για τον σωστό έλεγχο στάθμης των υγρών;',
+        a: 'Μοτοσυκλέτα όρθια, σε επίπεδο δρόμο, με σβηστό κινητήρα, κρύο μετά από τουλάχιστον 5 λεπτά.'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΠΕΡΙΜΕΤΡΙΚΟΙ',
+        q: 'Πόσος πρέπει να είναι ο τζόγος της αλυσίδας και γιατί;',
+        a: '2 έως 3 εκατοστά (κενό). Χρειάζεται για να αποσβένει το βάρος αναβάτη/συνεπιβάτη και τις ανωμαλίες του δρόμου.'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΠΕΡΙΜΕΤΡΙΚΟΙ',
+        q: 'Τι σημαίνει η ένδειξη ελαστικού 180/55/17 και ο 4ψήφιος κωδικός 2921;',
+        a: '180mm πλάτος πέλματος / 55% αναλογία ύψους-προφίλ / 17 ίντσες διάμετρος ζάντας. 2921 = 29η εβδομάδα του έτους 2021.'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΠΕΡΙΜΕΤΡΙΚΟΙ',
+        q: 'Ποιο είναι το ελάχιστο βάθος πέλματος ελαστικού (δείκτης TWI) και πότε αλλάζονται;',
+        a: 'Τουλάχιστον 1 χιλιοστό. Αλλαγή κάθε 4-5 χρόνια ή κάθε 20.000 - 25.000 χιλιόμετρα. Έλεγχος πίεσης 1 φορά την εβδομάδα.'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΗΛΕΚΤΡΙΚΑ',
+        q: 'Ποιοι είναι οι 4 ηλεκτρικοί έλεγχοι (3Φ + 1Κ) και ποια η εμβέλεια φώτων;',
+        a: 'Φώτα (μεσαία 40μ, μεγάλα 100μ), Φλας (εμπρός/πίσω), Φρένα (πίσω λάμπα stop), Κόρνα (λειτουργία μόνο για έκτακτη ανάγκη).'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΕΠΑΝΩ ΣΤΟ ΟΧΗΜΑ',
+        q: 'Ποιες είναι οι 2 απαραίτητες προϋποθέσεις ΠΡΙΝ ξεκινήσουμε τους 4 ελέγχους επάνω στο όχημα;',
+        a: 'Υποχρεωτικά ΝΕΚΡΑ στο κιβώτιο ταχυτήτων και ο ΠΛΑΓΙΟΣΤΑΤΗΣ ΑΝΕΒΑΣΜΕΝΟΣ!'
+      },
+      {
+        cat: 'checks',
+        badge: 'ΕΠΑΝΩ ΣΤΟ ΟΧΗΜΑ',
+        q: 'Πώς ελέγχονται οι αναρτήσεις και πώς ρυθμίζονται οι καθρέπτες;',
+        a: 'Εμπρός: πίεση στο τιμόνι με πατημένο φρένο. Πίσω: αναπήδηση στη σέλα. Καθρέπτες: ρύθμιση ΜΟΝΟ σε στάση και με το ΑΝΤΙΘΕΤΟ χέρι.'
+      },
+      {
+        cat: 'questions',
+        badge: 'ΚΤΕΟ',
+        q: 'Κάθε πότε περνάει ΚΤΕΟ μια μοτοσυκλέτα από τη στιγμή της αγοράς της ως καινούργια;',
+        a: 'Απαλλαγή για τα πρώτα 4 χρόνια. Έπειτα περνάει υποχρεωτικά ανά 2 χρόνια (4ο, 6ο, 8ο έτος κ.ο.κ.).'
+      },
+      {
+        cat: 'questions',
+        badge: 'ΕΞΟΠΛΙΣΜΟΣ',
+        q: 'Ποιο κράνος απαγορεύεται και πώς ρυθμίζεται το λουράκι;',
+        a: 'Απαγορεύεται το ανοικτό κράνος τύπου JET (επιτρέπεται full-face ή flip-up). Το λουράκι πρέπει να έχει κενό 1 δάχτυλο από τον λαιμό.'
+      },
+      {
+        cat: 'questions',
+        badge: 'KILL SWITCH',
+        q: 'Τι ακριβώς κόβει ο κόκκινος διακόπτης έκτακτης ανάγκης (Kill switch);',
+        a: 'Κόβει ΜΟΝΟ το ρεύμα λειτουργίας του κινητήρα. Τα φώτα, η κόρνα και τα υπόλοιπα ηλεκτρικά συνεχίζουν να λειτουργούν κανονικά.'
+      },
+      {
+        cat: 'questions',
+        badge: 'ΦΡΕΝΑΡΙΣΜΑ',
+        q: 'Ποια είναι τα ποσοστά κατανομής πέδησης στο φρενάρισμα ανάγκης και γιατί;',
+        a: '75% μπροστινό φρένο και 25% πίσω. Λόγω της μεταφοράς βάρους εμπρός (βύθισμα ανάρτησης), το πίσω μέρος ελαφρώνει.'
+      }
+    ];
+
+    let currentCardIndex = 0;
+    let filteredCards = [...flashcardsData];
+    let learnedCardsSet = new Set(JSON.parse(localStorage.getItem('moto_learned_cards') || '[]'));
+
+    function updateFlashcardUI() {
+      if (filteredCards.length === 0) return;
+      const card = filteredCards[currentCardIndex];
+      const isLearned = learnedCardsSet.has(card.q);
+
+      document.getElementById('card-counter').innerText = `Κάρτα ${currentCardIndex + 1} από ${filteredCards.length}`;
+      document.getElementById('card-badge').innerText = card.badge;
+      document.getElementById('card-question').innerText = card.q;
+      document.getElementById('card-answer').innerHTML = card.a;
+
+      document.getElementById('learned-counter').innerText = `${learnedCardsSet.size} Μαθημένες`;
+
+      // Unflip card
+      const inner = document.getElementById('flashcard-inner');
+      inner.classList.remove('rotate-y-180');
+
+      updateGlobalProgress();
+    }
+
+    function flipCurrentCard() {
+      const inner = document.getElementById('flashcard-inner');
+      inner.classList.toggle('rotate-y-180');
+      playTone(600, 'sine', 0.05);
+    }
+
+    function nextFlashcard() {
+      currentCardIndex = (currentCardIndex + 1) % filteredCards.length;
+      updateFlashcardUI();
+    }
+
+    function prevFlashcard() {
+      currentCardIndex = (currentCardIndex - 1 + filteredCards.length) % filteredCards.length;
+      updateFlashcardUI();
+    }
+
+    function markAsLearned() {
+      const card = filteredCards[currentCardIndex];
+      learnedCardsSet.add(card.q);
+      localStorage.setItem('moto_learned_cards', JSON.stringify([...learnedCardsSet]));
+      showToast('Σημειώθηκε ως εμπεδωμένο!', '✅');
+      playSuccessSound();
+      nextFlashcard();
+    }
+
+    function markAsNeedReview() {
+      const card = filteredCards[currentCardIndex];
+      learnedCardsSet.delete(card.q);
+      localStorage.setItem('moto_learned_cards', JSON.stringify([...learnedCardsSet]));
+      showToast('Σημειώθηκε για επανάληψη', '⚠️');
+      nextFlashcard();
+    }
+
+    function filterFlashcards() {
+      const cat = document.getElementById('flashcard-category').value;
+      if (cat === 'all') {
+        filteredCards = [...flashcardsData];
+      } else {
+        filteredCards = flashcardsData.filter(c => c.cat === cat);
+      }
+      currentCardIndex = 0;
+      updateFlashcardUI();
+    }
+
+    /* ====================================================================
+       DATA: QUIZ QUESTIONS (20 Comprehensive Exam Questions)
+       ==================================================================== */
+    const quizQuestions = [
+      {
+        q: 'Ποιο είναι το 1ο απαραίτητο βήμα κατά το τσούλημα του δικύκλου;',
+        options: [
+          'Ανέβασμα του πλαγιοστάτη',
+          'Κατέβασμα της ζελατίνας κράνους (κενό 1 δάχτυλο)',
+          'Βάζουμε μπροστά τον κινητήρα με τη μίζα',
+          'Βάζουμε 1η ταχύτητα στο κιβώτιο'
+        ],
+        correct: 1,
+        exp: 'Πρώτο βήμα είναι πάντα το κατέβασμα της ζελατίνας αφήνοντας άνοιγμα ενός μόνο δακτύλου για εξαερισμό.'
+      },
+      {
+        q: 'Στην ελικοειδή διαδρομή (κώνοι / slalom), ποια είναι η απόσταση των κώνων για την κατηγορία Α2 και Α;',
+        options: [
+          '3,0 μέτρα',
+          '3,5 μέτρα',
+          '4,0 μέτρα',
+          '4,5 μέτρα'
+        ],
+        correct: 2,
+        exp: 'Στην κατηγορία Α2 και Α η απόσταση των 7 κώνων είναι ακριβώς 4 μέτρα (στην ΑΜ & Α1 είναι 3,5 μέτρα).'
+      },
+      {
+        q: 'Στη γραμμή βραδυπορίας, ποιος είναι ο ελάχιστος επιτρεπτός χρόνος διέλευσης;',
+        options: [
+          'Τουλάχιστον 10 δευτερόλεπτα',
+          'Τουλάχιστον 12 δευτερόλεπτα',
+          'Τουλάχιστον 15 δευτερόλεπτα',
+          'Ακριβώς 20 δευτερόλεπτα'
+        ],
+        correct: 2,
+        exp: 'Ο χρόνος πρέπει να είναι τουλάχιστον 15 δευτερόλεπτα. Χρόνος κάτω από 15'' σημαίνει αυτόματη αποτυχία.'
+      },
+      {
+        q: 'Τι ορίζει η μέθοδος FIFO (First In, First Out) στη μέτρηση της αργής γραμμής;',
+        options: [
+          'Ο χρόνος μετρά από την πίσω ρόδα στην είσοδο μέχρι την πίσω ρόδα στην έξοδο',
+          'Ο χρόνος μετρά μόλις πατήσει η μπροστινή ρόδα και σταματά μόλις βγει η μπροστινή ρόδα',
+          'Ο χρόνος μετρά από την εκκίνηση του κινητήρα',
+          'Ο χρόνος μετρά από το τσούλημα των 10 μέτρων'
+        ],
+        correct: 1,
+        exp: 'FIFO: Μπροστινή ρόδα είσοδος και σταματάει μόλις βγει η μπροστινή ρόδα από τη γραμμή εξόδου.'
+      },
+      {
+        q: 'Ποιο είναι το όριο χρόνου στη δοκιμασία «Επιτάχυνση με αλλαγές ταχυτήτων (1η-2η)» μήκους 50 μέτρων;',
+        options: [
+          '8,50 δευτερόλεπτα',
+          '5,50 δευτερόλεπτα',
+          'ΔΕΝ υπάρχει όριο χρόνου',
+          '15 δευτερόλεπτα'
+        ],
+        correct: 2,
+        exp: 'Η επιτάχυνση με αλλαγές ΔΕΝ έχει όριο χρόνου. Επιταχύνουμε ήρεμα, ρολάρουμε τα τελευταία 10μ και δεν πατάμε φρένο.'
+      },
+      {
+        q: 'Στην αποφυγή εμποδίου για κατηγορία Α2 και Α (μήκος 40μ), ποιος είναι ο μέγιστος χρόνος και ποια ταχύτητα χρησιμοποιούμε;',
+        options: [
+          '8,50 δευτερόλεπτα με 1η και 2α ταχύτητα',
+          '5,50 δευτερόλεπτα με χρήση ΜΟΝΟ 1ης ταχύτητας',
+          '5,50 δευτερόλεπτα με 1η και 2α ταχύτητα',
+          '7,00 δευτερόλεπτα με οποιαδήποτε ταχύτητα'
+        ],
+        correct: 1,
+        exp: 'Στην Α2 και Α ο χρόνος είναι έως 5,50'' και χρησιμοποιείται αποκλειστικά η 1η ταχύτητα στο κιβώτιο.'
+      },
+      {
+        q: 'Στο φρενάρισμα έκτακτης ανάγκης στην πίστα, πότε επιτρέπεται να ξεκινήσουμε το φρενάρισμα;',
+        options: [
+          'Μέσα στον διάδρομο επιτάχυνσης στα 20 μέτρα',
+          'Στις βούλες των 10 μέτρων',
+          'Ανάμεσα στους δύο κώνους εξόδου και όχι νωρίτερα',
+          'Μόλις περάσουμε την τελική γραμμή'
+        ],
+        correct: 2,
+        exp: 'Το φρενάρισμα ξεκινά ανάμεσα στους 2 κώνους εξόδου και ποτέ νωρίτερα (απαγορεύεται το φρένο στον διάδρομο).'
+      },
+      {
+        q: 'Κατά την εγκατάλειψη του δικύκλου, με ποιο χέρι γυρίζουμε το κλειδί για να σβήσουμε τη μηχανή και γιατί;',
+        options: [
+          'Με το δεξί χέρι για να κρατάμε το γκάζι',
+          'Με το αριστερό χέρι ώστε να φαίνεται η πράσινη ένδειξη της νεκράς στον εξεταστή',
+          'Με όποιο χέρι θέλουμε, δεν έχει σημασία',
+          'Με το δεξί πατώντας ταυτόχρονα τη μίζα'
+        ],
+        correct: 1,
+        exp: 'Σβήνουμε με το αριστερό χέρι ώστε το σώμα μας να μην κρύβει το καντράν και να φαίνεται καθαρά η νεκρά (N).'
+      },
+      {
+        q: 'Ποια είναι η σωστή ενέργεια κιβωτίου στο βήμα 4 της εγκατάλειψης δικύκλου;',
+        options: [
+          'Αφήνουμε νεκρά θέση',
+          'Βάζουμε 1η ταχύτητα ΧΩΡΙΣ να πατάμε συμπλέκτη και σπρώχνουμε εμπρός-πίσω',
+          'Βάζουμε 2α ταχύτητα με πατημένο συμπλέκτη',
+          'Βγάζουμε τη νεκρά και πατάμε φρένο'
+        ],
+        correct: 1,
+        exp: 'Κουμπώνουμε 1η ταχύτητα χωρίς συμπλέκτη και σπρώχνουμε ελαφρά ώστε να βεβαιωθεί το μπλοκάρισμα του πίσω τροχού.'
+      },
+      {
+        q: 'Ποιο από τα παρακάτω υγρά ΔΕΝ υπάρχει προς έλεγχο στις μικρές κατηγορίες Α1 και ΑΜ;',
+        options: [
+          'Λάδια κινητήρα',
+          'Βενζίνη',
+          'Ψυκτικό υγρό (υγρόψυκτο σύστημα) και πίσω υγρό φρένων (έχουν ταμπούρο)',
+          'Λάδι αναρτήσεων'
+        ],
+        correct: 2,
+        exp: 'Τα δίκυκλα Α1/ΑΜ είναι συνήθως αερόψυκτα (χωρίς ψυκτικό) και έχουν μηχανικό ταμπούρο πίσω (όχι υγρά φρένων).'
+      },
+      {
+        q: 'Ποιες είναι οι 4 προϋποθέσεις για να ελέγξουμε τις στάθμες των υγρών της μοτοσυκλέτας;',
+        options: [
+          'Όρθια θέση, επίπεδος δρόμος, κινητήρας σε λειτουργία, ζεστός',
+          'Στο πλάγιο σταντ, κατηφόρα, σβηστός κινητήρας, κρύος',
+          'Όρθια θέση, επίπεδος δρόμος, σβηστός κινητήρας, μετά από 5 λεπτά (κρύος)',
+          'Σε κεντρικό σταντ, με ανοιχτά φώτα και γκάζι'
+        ],
+        correct: 2,
+        exp: 'Πάντα: Όρθια μοτοσυκλέτα, επίπεδος δρόμος, σβηστός κινητήρας, και μετά από 5 λεπτά για να καθίσει το λάδι.'
+      },
+      {
+        q: 'Πόσος πρέπει να είναι ο τζόγος (κενό) της αλυσίδας μετάδοσης κίνησης;',
+        options: [
+          '0,5 με 1 εκατοστό',
+          '2 με 3 εκατοστά',
+          '5 με 6 εκατοστά',
+          'Δεν πρέπει να έχει καθόλου τζόγο'
+        ],
+        correct: 1,
+        exp: 'Ο ιδανικός τζόγος είναι 2-3 εκ. για να απορροφά τις μεταβολές από το βάρος και τις ανωμαλίες του δρόμου.'
+      },
+      {
+        q: 'Τι δηλώνει ο 4ψήφιος κωδικός DOT (π.χ. 2921) επάνω στο ελαστικό;',
+        options: [
+          'Μέγιστη επιτρεπόμενη πίεση σε psi',
+          '29η εβδομάδα του έτους 2021 ως ημερομηνία κατασκευής',
+          'Διάμετρος ζάντας 29 ίντσες και πλάτος 21',
+          'Κωδικός έγκρισης τύπου του υπουργείου'
+        ],
+        correct: 1,
+        exp: 'Τα πρώτα 2 ψηφία είναι η εβδομάδα (29η) και τα 2 τελευταία το έτος κατασκευής (2021).'
+      },
+      {
+        q: 'Ποιο είναι το ελάχιστο νόμιμο βάθος πέλματος ελαστικού (δείκτης TWI);',
+        options: [
+          '0,5 χιλιοστό',
+          '1,0 χιλιοστό',
+          '1,6 χιλιοστά',
+          '2,5 χιλιοστά'
+        ],
+        correct: 1,
+        exp: 'Το όριο φθοράς του δείκτη TWI στις μοτοσυκλέτες είναι 1 χιλιοστό.'
+      },
+      {
+        q: 'Ποια είναι η εμβέλεια των μεσαίων φώτων (διασταυρώσεως) και των μεγάλων (πορείας);',
+        options: [
+          '20μ μεσαία / 50μ μεγάλα',
+          '40μ μεσαία / 100μ μεγάλα',
+          '50μ μεσαία / 150μ μεγάλα',
+          '30μ μεσαία / 80μ μεγάλα'
+        ],
+        correct: 1,
+        exp: 'Τα μεσαία φώτα φωτίζουν τουλάχιστον στα 40 μέτρα και τα μεγάλα φώτα πορείας στα 100 μέτρα.'
+      },
+      {
+        q: 'Ποιες δύο ενέργειες απαιτούνται ΥΠΟΧΡΕΩΤΙΚΑ πριν ξεκινήσουμε τους 4 ελέγχους επάνω στο όχημα;',
+        options: [
+          'Αναμμένα μεγάλα φώτα και κατεβασμένος πλαγιοστάτης',
+          'Νεκρά στο κιβώτιο και πλαγιοστάτης ανεβασμένος',
+          'Κλειστός διακόπτης βενζίνης και 1η ταχύτητα',
+          'Ανοιχτή ζελατίνα και πατημένο μπροστινό φρένο'
+        ],
+        correct: 1,
+        exp: 'Προσοχή εξεταστή: Υποχρεωτικά νεκρά θέση στο κιβώτιο και ο πλαγιοστάτης σηκωμένος επάνω!'
+      },
+      {
+        q: 'Πώς και πότε ρυθμίζονται οι καθρέπτες της μοτοσυκλέτας;',
+        options: [
+          'Εν κινήσει με το ίδιο χέρι',
+          'Μόνο όταν είμαστε σε στάση, χρησιμοποιώντας το αντίθετο χέρι',
+          'Πριν ανέβουμε στη σέλα με τα δύο χέρια',
+          'Αποκλειστικά από τον συνοδό εκπαιδευτή'
+        ],
+        correct: 1,
+        exp: 'Ρύθμιση μόνο σε στάση και με το αντίθετο χέρι (π.χ. αριστερό χέρι για τον δεξιό καθρέπτη).'
+      },
+      {
+        q: 'Καινούργια μοτοσυκλέτα μετά από πόσα χρόνια περνάει για πρώτη φορά ΚΤΕΟ και κάθε πότε έπειτα;',
+        options: [
+          'Μετά από 2 χρόνια και έπειτα κάθε χρόνο',
+          'Μετά από 4 χρόνια και έπειτα ανά 2 χρόνια (4ο, 6ο, 8ο έτος)',
+          'Μετά από 5 χρόνια και έπειτα ανά 3 χρόνια',
+          'Μετά από 1 χρόνο και έπειτα ανά 2 χρόνια'
+        ],
+        correct: 1,
+        exp: 'Απαλλαγή για 4 χρόνια από την 1η άδεια κυκλοφορίας και στη συνέχεια έλεγχος κάθε 2 χρόνια.'
+      },
+      {
+        q: 'Τι κόβει ο κόκκινος διακόπτης έκτακτης ανάγκης (Kill switch);',
+        options: [
+          'Όλα τα ηλεκτρικά συστήματα και τα φώτα',
+          'Κόβει ΜΟΝΟ το ρεύμα στον κινητήρα, αφήνοντας φώτα, κόρνα και ηλεκτρικά σε λειτουργία',
+          'Τη ροή της βενζίνης από το ντεπόζιτο μηχανικά',
+          'Μπλοκάρει τους τροχούς αυτόματα'
+        ],
+        correct: 1,
+        exp: 'Κόβει αποκλειστικά το ρεύμα του κινητήρα για άμεσο σβήσιμο. Τα φώτα και η κόρνα μένουν ενεργά.'
+      },
+      {
+        q: 'Στο φρενάρισμα ανάγκης, ποιο είναι το ποσοστό δύναμης πέδησης που αναλαμβάνει το μπροστινό σύστημα;',
+        options: [
+          '50% εμπρός - 50% πίσω',
+          '25% εμπρός - 75% πίσω',
+          '75% εμπρός - 25% πίσω',
+          '100% εμπρός - 0% πίσω'
+        ],
+        correct: 2,
+        exp: 'Το μπροστινό φρένο αναλαμβάνει το 75% του φρεναρίσματος γιατί λόγω βύθισης το βάρος μεταφέρεται εμπρός.'
+      }
+    ];
+
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+    let quizAnswered = false;
+
+    function startQuiz() {
+      currentQuizIndex = 0;
+      quizScore = 0;
+      document.getElementById('quiz-start-screen').classList.add('hidden');
+      document.getElementById('quiz-result-screen').classList.add('hidden');
+      document.getElementById('quiz-question-screen').classList.remove('hidden');
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      quizAnswered = false;
+      const q = quizQuestions[currentQuizIndex];
+
+      document.getElementById('quiz-q-num').innerText = `ΕΡΩΤΗΣΗ ${currentQuizIndex + 1} / ${quizQuestions.length}`;
+      document.getElementById('quiz-live-score').innerText = `${quizScore} Σωστά`;
+      document.getElementById('quiz-q-text').innerText = q.q;
+
+      const optsContainer = document.getElementById('quiz-options');
+      optsContainer.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left p-3.5 sm:p-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium hover:border-cyan-500/60 hover:bg-slate-800/80 transition flex items-start space-x-3';
+        btn.innerHTML = `<span class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-mono text-xs text-cyan-400 font-bold flex-shrink-0 mt-0.5">${String.fromCharCode(65 + idx)}</span><span class="flex-grow">${opt}</span>`;
+        btn.onclick = () => selectQuizAnswer(idx, btn);
+        optsContainer.appendChild(btn);
+      });
+
+      document.getElementById('quiz-feedback-box').classList.add('hidden');
+      document.getElementById('quiz-next-btn').classList.add('hidden');
+    }
+
+    function selectQuizAnswer(selectedIdx, btnElement) {
+      if (quizAnswered) return;
+      quizAnswered = true;
+
+      const q = quizQuestions[currentQuizIndex];
+      const allBtns = document.getElementById('quiz-options').children;
+      const feedbackBox = document.getElementById('quiz-feedback-box');
+      const feedbackTitle = document.getElementById('quiz-feedback-title');
+      const feedbackText = document.getElementById('quiz-feedback-text');
+
+      if (selectedIdx === q.correct) {
+        quizScore++;
+        playSuccessSound();
+        btnElement.classList.remove('bg-slate-900', 'border-slate-800');
+        btnElement.classList.add('bg-emerald-950/70', 'border-emerald-500', 'text-white', 'glow-emerald');
+
+        feedbackBox.className = 'p-4 rounded-2xl border text-xs sm:text-sm leading-relaxed bg-emerald-950/40 border-emerald-500/50 text-emerald-300';
+        feedbackTitle.innerHTML = '<span>✓ ΣΩΣΤΟ!</span>';
+      } else {
+        playErrorSound();
+        btnElement.classList.remove('bg-slate-900', 'border-slate-800');
+        btnElement.classList.add('bg-red-950/70', 'border-red-500', 'text-white', 'glow-red');
+
+        // Highlight correct option
+        allBtns[q.correct].classList.remove('bg-slate-900', 'border-slate-800');
+        allBtns[q.correct].classList.add('bg-emerald-950/60', 'border-emerald-500/80', 'text-emerald-200');
+
+        feedbackBox.className = 'p-4 rounded-2xl border text-xs sm:text-sm leading-relaxed bg-red-950/40 border-red-500/50 text-red-300';
+        feedbackTitle.innerHTML = '<span>✖ ΛΑΘΟΣ ΑΠΑΝΤΗΣΗ</span>';
+      }
+
+      feedbackText.innerText = q.exp;
+      feedbackBox.classList.remove('hidden');
+      document.getElementById('quiz-next-btn').classList.remove('hidden');
+      document.getElementById('quiz-live-score').innerText = `${quizScore} Σωστά`;
+
+      updateGlobalProgress();
+    }
+
+    function nextQuizQuestion() {
+      currentQuizIndex++;
+      if (currentQuizIndex < quizQuestions.length) {
+        renderQuizQuestion();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quiz-question-screen').classList.add('hidden');
+      const resScreen = document.getElementById('quiz-result-screen');
+      resScreen.classList.remove('hidden');
+
+      const pct = Math.round((quizScore / quizQuestions.length) * 100);
+      document.getElementById('quiz-result-percentage').innerText = `${pct}%`;
+      document.getElementById('quiz-result-fraction').innerText = `${quizScore} / ${quizQuestions.length} Σωστές Απαντήσεις`;
+
+      const title = document.getElementById('quiz-result-title');
+      const sub = document.getElementById('quiz-result-subtitle');
+      const icon = document.getElementById('quiz-result-icon');
+
+      if (pct >= 85) {
+        title.innerText = 'ΕΞΑΙΡΕΤΙΚΑ! ΕΙΣΑΙ ΕΤΟΙΜΟΣ!';
+        sub.innerText = 'Πέρασες το τεστ με επιτυχία. Έχεις εμπεδώσει πλήρως τη θεωρία πίστας και ελέγχων.';
+        icon.className = 'w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-4xl shadow-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 glow-emerald';
+        icon.innerText = '🏆';
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        playSuccessSound();
+      } else {
+        title.innerText = 'ΧΡΕΙΑΖΕΤΑΙ ΕΠΑΝΑΛΗΨΗ';
+        sub.innerText = 'Η βάση επιτυχίας είναι 85%. Διάβασε ξανά τους 12 ελέγχους και τα μέτρα των δοκιμασιών.';
+        icon.className = 'w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-4xl shadow-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 glow-amber';
+        icon.innerText = '⚠️';
+      }
+
+      localStorage.setItem('moto_last_quiz_score', pct);
+    }
+
+    /* ====================================================================
+       INTERACTIVE TRACK SIMULATOR (SLOW LINE TIMER & SPEED TIMER)
+       ==================================================================== */
+    // Timer 1: Slow Line (15s minimum)
+    let slowInterval = null;
+    let slowStartTime = null;
+    let isSlowRunning = false;
+
+    function toggleSlowTimer() {
+      const btn = document.getElementById('slow-timer-start-btn');
+      const display = document.getElementById('slow-timer-display');
+      const status = document.getElementById('slow-timer-status');
+      const progress = document.getElementById('slow-timer-progress');
+
+      if (!isSlowRunning) {
+        // START (Wheel In)
+        isSlowRunning = true;
+        slowStartTime = Date.now();
+        btn.innerText = '🏁 ΕΞΟΔΟΣ ΜΠΡΟΣΤΙΝΟΥ ΤΡΟΧΟΥ (STOP)';
+        btn.classList.remove('bg-cyan-600', 'hover:bg-cyan-500');
+        btn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+        status.innerText = 'Χρονομέτρηση σε εξέλιξη... Κρατήστε ισορροπία!';
+        status.className = 'mt-3 text-xs font-mono font-bold text-cyan-400 animate-pulse';
+        playTone(440, 'sine', 0.1);
+
+        slowInterval = setInterval(() => {
+          const elapsed = (Date.now() - slowStartTime) / 1000;
+          display.innerText = elapsed.toFixed(2) + "''";
+          const pct = Math.min((elapsed / 15) * 100, 100);
+          progress.style.width = pct + '%';
+
+          if (elapsed >= 15) {
+            progress.classList.remove('bg-cyan-500');
+            progress.classList.add('bg-emerald-500');
+          }
+        }, 50);
+
+      } else {
+        // STOP (Wheel Out)
+        isSlowRunning = false;
+        clearInterval(slowInterval);
+        const finalTime = (Date.now() - slowStartTime) / 1000;
+        display.innerText = finalTime.toFixed(2) + "''";
+
+        btn.innerText = '🏁 ΕΙΣΟΔΟΣ ΜΠΡΟΣΤΙΝΟΥ ΤΡΟΧΟΥ (START)';
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+        btn.classList.add('bg-cyan-600', 'hover:bg-cyan-500');
+
+        if (finalTime >= 15.00) {
+          status.innerText = `✓ ΕΠΙΤΥΧΙΑ! Χρόνος ${finalTime.toFixed(2)}'' (≥ 15.00''). Άριστη ισορροπία!`;
+          status.className = 'mt-3 text-xs font-mono font-bold text-emerald-400';
+          playSuccessSound();
+          confetti({ particleCount: 40, spread: 50 });
+        } else {
+          status.innerText = `✖ ΑΠΟΤΥΧΙΑ! Χρόνος ${finalTime.toFixed(2)}'' (< 15.00''). Πέρασες πολύ γρήγορα!`;
+          status.className = 'mt-3 text-xs font-mono font-bold text-red-400';
+          playErrorSound();
+        }
+      }
+    }
+
+    function resetSlowTimer() {
+      if (isSlowRunning) toggleSlowTimer();
+      isSlowRunning = false;
+      clearInterval(slowInterval);
+      document.getElementById('slow-timer-display').innerText = "00.00''";
+      document.getElementById('slow-timer-progress').style.width = '0%';
+      document.getElementById('slow-timer-progress').className = 'bg-cyan-500 h-full transition-all duration-75';
+      const status = document.getElementById('slow-timer-status');
+      status.innerText = 'Πατήστε «ΕΙΣΟΔΟΣ ΤΡΟΧΟΥ» μόλις πατήσει ο μπροστινός τροχός';
+      status.className = 'mt-3 text-xs font-mono font-bold text-slate-400';
+    }
+
+    function selectSlowLineSim() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Timer 2: Speed / Avoidance (Target: 8.50s or 5.50s)
+    let speedCategory = 'A1';
+    let speedInterval = null;
+    let speedStartTime = null;
+    let isSpeedRunning = false;
+
+    function setSpeedCategory(cat) {
+      speedCategory = cat;
+      const btnA1 = document.getElementById('cat-btn-a1');
+      const btnA2 = document.getElementById('cat-btn-a2');
+      const label = document.getElementById('speed-target-label');
+
+      if (cat === 'A1') {
+        btnA1.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-cyan-600 text-white';
+        btnA2.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white';
+        label.innerText = '8.50 δευτερόλεπτα (55μ - 1η & 2α)';
+      } else {
+        btnA2.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-600 text-white';
+        btnA1.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white';
+        label.innerText = '5.50 δευτερόλεπτα (40μ - Μόνο 1η)';
+      }
+      resetSpeedTimer();
+    }
+
+    function toggleSpeedTimer() {
+      const btn = document.getElementById('speed-timer-btn');
+      const display = document.getElementById('speed-timer-display');
+      const status = document.getElementById('speed-timer-status');
+      const maxLimit = speedCategory === 'A1' ? 8.50 : 5.50;
+
+      if (!isSpeedRunning) {
+        isSpeedRunning = true;
+        speedStartTime = Date.now();
+        btn.innerText = '🛑 ΤΕΡΜΑΤΙΣΜΟΣ / ΕΞΟΔΟΣ';
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+        btn.classList.add('bg-red-600', 'hover:bg-red-500');
+        status.innerText = 'Επιτάχυνση σε εξέλιξη...';
+        status.className = 'mt-3 text-xs font-mono font-bold text-amber-400 animate-pulse';
+        playTone(500, 'square', 0.1);
+
+        speedInterval = setInterval(() => {
+          const elapsed = (Date.now() - speedStartTime) / 1000;
+          display.innerText = elapsed.toFixed(2) + "''";
+        }, 50);
+
+      } else {
+        isSpeedRunning = false;
+        clearInterval(speedInterval);
+        const finalTime = (Date.now() - speedStartTime) / 1000;
+        display.innerText = finalTime.toFixed(2) + "''";
+
+        btn.innerText = '🚀 ΕΚΚΙΝΗΣΗ ΔΙΑΔΡΟΜΗΣ';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-500');
+        btn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+
+        if (finalTime <= maxLimit) {
+          status.innerText = `✓ ΕΠΙΤΥΧΙΑ! Χρόνος ${finalTime.toFixed(2)}'' (Εντός ορίου ≤ ${maxLimit.toFixed(2)}'').`;
+          status.className = 'mt-3 text-xs font-mono font-bold text-emerald-400';
+          playSuccessSound();
+        } else {
+          status.innerText = `✖ ΑΠΟΤΥΧΙΑ! Χρόνος ${finalTime.toFixed(2)}'' (> ${maxLimit.toFixed(2)}''). Πολύ αργή εκτέλεση!`;
+          status.className = 'mt-3 text-xs font-mono font-bold text-red-400';
+          playErrorSound();
+        }
+      }
+    }
+
+    function resetSpeedTimer() {
+      if (isSpeedRunning) toggleSpeedTimer();
+      isSpeedRunning = false;
+      clearInterval(speedInterval);
+      document.getElementById('speed-timer-display').innerText = "00.00''";
+      document.getElementById('speed-timer-status').innerText = 'Έτοιμοι για εκκίνηση';
+      document.getElementById('speed-timer-status').className = 'mt-3 text-xs font-mono font-bold text-slate-400';
+    }
+
+    /* ====================================================================
+       CHECKLIST LOGIC (PERSISTENT VIA LOCALSTORAGE)
+       ==================================================================== */
+    const checklistRollSteps = [
+      '1. Κατέβασμα ζελατίνας κράνους (κενό 1 δάχτυλο)',
+      '2. Σιγουρεύω νεκρά θέση (N) στο κιβώτιο',
+      '3. Ανέβασμα πλαγιοστάτη ΜΕ ΠΡΟΣΟΧΗ (όχι πτώση)',
+      '4. Τσούλημα 10 μέτρα με τα 2 χέρια στο τιμόνι',
+      '5. Στήριξη ξανά υποχρεωτικά στη γραμμή εκκίνησης',
+      '6. Ανέβασμα στο όχημα με έλεγχο κεφαλιού πίσω',
+      '7. Ανέβασμα πλαγιοστάτη (αλλιώς θα σβήσει με 1η)',
+      '8. Ζελατίνα: Έλεγχος ΞΑΝΑ ότι είναι κατεβασμένη',
+      '9. Μίζα, κόκκινος διακόπτης ΟΝ, συμπλέκτης, 1η ταχύτητα'
+    ];
+
+    const checklistLeaveSteps = [
+      '1. Αριστερό φλας, έλεγχος πάνω από αριστερό ώμο και στάση',
+      '2. Βάζω νεκρά (N), σβήνω φλας με αριστερό αντίχειρα',
+      '3. Γυρίζω κλειδί με ΑΡΙΣΤΕΡΟ χέρι (φαίνεται η νεκρά στον εξεταστή)',
+      '4. Κουμπώνω 1η ταχύτητα ΧΩΡΙΣ συμπλέκτη & σπρώχνω εμπρός-πίσω',
+      '5. Κατεβάζω πλαγιοστάτη, έλεγχος ώμου και κατεβαίνω',
+      '6. Παίρνω τα κλειδιά & τα πετάω στον δάσκαλο (άλλη μία επίδειξη)'
+    ];
+
+    function renderChecklists() {
+      const rollSaved = JSON.parse(localStorage.getItem('moto_check_roll') || '{}');
+      const leaveSaved = JSON.parse(localStorage.getItem('moto_check_leave') || '{}');
+
+      const rollContainer = document.getElementById('checklist-roll-container');
+      rollContainer.innerHTML = '';
+      checklistRollSteps.forEach((step, idx) => {
+        const isChecked = !!rollSaved[idx];
+        const item = document.createElement('label');
+        item.className = `flex items-center space-x-3 p-2.5 rounded-xl border text-xs cursor-pointer transition ${isChecked ? 'bg-cyan-950/40 border-cyan-800 text-cyan-200' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}`;
+        item.innerHTML = `
+          <input type="checkbox" onchange="toggleCheckItem('roll', ${idx})" ${isChecked ? 'checked' : ''} class="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700 focus:ring-0">
+          <span class="${isChecked ? 'line-through opacity-80' : ''}">${step}</span>
+        `;
+        rollContainer.appendChild(item);
+      });
+
+      const leaveContainer = document.getElementById('checklist-leave-container');
+      leaveContainer.innerHTML = '';
+      checklistLeaveSteps.forEach((step, idx) => {
+        const isChecked = !!leaveSaved[idx];
+        const item = document.createElement('label');
+        item.className = `flex items-center space-x-3 p-2.5 rounded-xl border text-xs cursor-pointer transition ${isChecked ? 'bg-emerald-950/40 border-emerald-800 text-emerald-200' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}`;
+        item.innerHTML = `
+          <input type="checkbox" onchange="toggleCheckItem('leave', ${idx})" ${isChecked ? 'checked' : ''} class="w-4 h-4 rounded text-emerald-500 bg-slate-800 border-slate-700 focus:ring-0">
+          <span class="${isChecked ? 'line-through opacity-80' : ''}">${step}</span>
+        `;
+        leaveContainer.appendChild(item);
+      });
+    }
+
+    function toggleCheckItem(type, idx) {
+      const key = type === 'roll' ? 'moto_check_roll' : 'moto_check_leave';
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      saved[idx] = !saved[idx];
+      localStorage.setItem(key, JSON.stringify(saved));
+      renderChecklists();
+      playTone(550, 'sine', 0.05);
+      updateGlobalProgress();
+    }
+
+    function resetChecklist(type) {
+      const key = type === 'roll' ? 'moto_check_roll' : 'moto_check_leave';
+      localStorage.removeItem(key);
+      renderChecklists();
+      showToast('Η λίστα καθαρίστηκε', '🧹');
+    }
+
+    /* ====================================================================
+       DATA: ΣΚΟΝΑΚΙ ΑΡΙΘΜΩΝ & ΜΕΓΕΘΩΝ (MATRIX)
+       ==================================================================== */
+    const matrixData = [
+      { tag: 'ΠΙΣΤΑ', title: 'Κώνοι Slalom AM & A1', val: '3,5 μέτρα', note: 'Απόσταση ανάμεσα στους 7 κώνους (1η ταχύτητα)' },
+      { tag: 'ΠΙΣΤΑ', title: 'Κώνοι Slalom A2 & A', val: '4,0 μέτρα', note: 'Απόσταση ανάμεσα στους 7 κώνους (1η ταχύτητα)' },
+      { tag: 'ΠΙΣΤΑ', title: 'Πλήθος Κώνων Slalom', val: '7 κώνοι', note: 'Σε ευθεία σειρά, είσοδος από όποια μεριά θέλουμε' },
+      { tag: 'ΠΙΣΤΑ', title: 'Χρόνος Βραδυπορίας', val: '≥ 15.00 δευτ.', note: 'Απαγορεύεται χρόνος < 15'' (Μέθοδος FIFO)' },
+      { tag: 'ΠΙΣΤΑ', title: 'Διαστάσεις Βραδυπορίας', val: '25μ x 40εκ.', note: '25 μέτρα μήκος, 40 εκ. πλάτος + 3μ ελεύθερα στην αρχή' },
+      { tag: 'ΠΙΣΤΑ', title: 'Επιτάχυνση 1η-2η', val: '50μ x 40εκ.', note: 'ΧΩΡΙΣ όριο χρόνου, ελεύθερη κύλιση τα τελευταία 10μ' },
+      { tag: 'ΠΙΣΤΑ', title: 'Αποφυγή Εμποδίου Α1', val: '8,50'' max', note: '55 μέτρα μήκος με χρήση 1ης & 2ας ταχύτητας' },
+      { tag: 'ΠΙΣΤΑ', title: 'Αποφυγή Εμποδίου Α2/Α', val: '5,50'' max', note: '40 μέτρα μήκος με χρήση ΜΟΝΟ 1ης ταχύτητας' },
+      { tag: 'ΠΙΣΤΑ', title: 'Διαστάσεις Εμποδίου', val: '2 μέτρα', note: 'Τοποθετημένο στα 7 μέτρα από την έξοδο του διαδρόμου' },
+      { tag: 'ΠΙΣΤΑ', title: 'Διαστάσεις Χωνιού', val: '4μ ➔ 2μ', note: 'Πλάτος εισόδου 4 μέτρα και πλάτος εξόδου 2 μέτρα' },
+      { tag: 'ΠΙΣΤΑ', title: 'Φρενάρισμα Ανάγκης', val: '20 μέτρα', note: 'Σταμάτημα στην τελική γραμμή μετά από 20μ' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'Τζόγος Αλυσίδας', val: '2 - 3 εκατοστά', note: 'Κενό για απόσβεση βάρους και ανωμαλιών' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'Δείκτης Φθοράς TWI', val: '1 χιλιοστό', note: 'Ελάχιστο επιτρεπτό βάθος πέλματος ελαστικού' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'Διάσταση π.χ. 180/55/17', val: '180 / 55% / 17"', note: '180mm πλάτος, 55% προφίλ, 17 ίντσες διάμετρος ζάντας' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'DOT Ελαστικού π.χ. 2921', val: '29η εβδ. 2021', note: '4 νούμερα σε οβάλ: Εβδομάδα & Έτος κατασκευής' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'Έλεγχος Πίεσης', val: '1 φορά / εβδομάδα', note: 'Πάντα με κρύα ελαστικά' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'Αλλαγή Ελαστικών', val: '4-5 έτη / 20-25k χλμ', note: 'Όποιο από τα δύο συμπληρωθεί νωρίτερα' },
+      { tag: 'ΕΛΕΓΧΟΙ', title: 'Έλεγχος Σταθμών Υγρών', val: '5 λεπτά μετά', note: 'Όρθια μοτοσυκλέτα, επίπεδος δρόμος, σβηστός κινητήρας' },
+      { tag: 'ΗΛΕΚΤΡΙΚΑ', title: 'Μεσαία Φώτα (Διασταύρωσης)', val: '40 μέτρα', note: 'Ελάχιστη εμβέλεια φωτισμού' },
+      { tag: 'ΗΛΕΚΤΡΙΚΑ', title: 'Μεγάλα Φώτα (Πορείας)', val: '100 μέτρα', note: 'Ελάχιστη εμβέλεια φωτισμού' },
+      { tag: 'ΕΡΩΤΗΣΕΙΣ', title: 'Πρώτο ΚΤΕΟ Καινούργιου', val: '4 χρόνια', note: 'Απαλλαγή 4 ετών από την πρώτη άδεια' },
+      { tag: 'ΕΡΩΤΗΣΕΙΣ', title: 'Περιοδικότητα ΚΤΕΟ', val: 'Κάθε 2 χρόνια', note: 'Μετά τα 4 έτη (4°, 6°, 8° έτος κ.ο.κ.)' },
+      { tag: 'ΕΡΩΤΗΣΕΙΣ', title: 'Κατανομή Φρεναρίσματος', val: '75% Ε / 25% Π', note: '75% εμπρός φρένο λόγω βύθισης βάρους, 25% πίσω' },
+      { tag: 'ΕΡΩΤΗΣΕΙΣ', title: 'Κράνος: Λουράκι', val: '1 δάχτυλο κενό', note: 'Απόσταση ασφαλείας από τον λαιμό' }
+    ];
+
+    function renderMatrix(items) {
+      const container = document.getElementById('matrix-grid');
+      container.innerHTML = '';
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-2xl bg-moto-card border border-moto-border hover:border-cyan-500/40 transition flex flex-col justify-between';
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-cyan-400 font-bold">${item.tag}</span>
+            </div>
+            <h4 class="text-xs font-semibold text-slate-300">${item.title}</h4>
+            <div class="text-lg font-mono font-black text-white mt-1">${item.val}</div>
+          </div>
+          <p class="text-[11px] text-slate-400 border-t border-slate-800/80 pt-2 mt-2 leading-tight">${item.note}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function searchMatrix() {
+      const query = document.getElementById('matrix-search').value.toLowerCase().trim();
+      const filtered = matrixData.filter(item => 
+        item.title.toLowerCase().includes(query) ||
+        item.val.toLowerCase().includes(query) ||
+        item.note.toLowerCase().includes(query) ||
+        item.tag.toLowerCase().includes(query)
+      );
+      renderMatrix(filtered);
+    }
+
+    /* ====================================================================
+       GLOBAL PROGRESS TRACKER
+       ==================================================================== */
+    function updateGlobalProgress() {
+      const learned = learnedCardsSet.size;
+      const rollSaved = Object.keys(JSON.parse(localStorage.getItem('moto_check_roll') || '{}')).length;
+      const leaveSaved = Object.keys(JSON.parse(localStorage.getItem('moto_check_leave') || '{}')).length;
+      const lastScore = parseInt(localStorage.getItem('moto_last_quiz_score') || '0', 10);
+
+      // Simple weighted progress
+      const totalUnits = 24 + 9 + 6 + 100; // 139 units total
+      const userUnits = learned + rollSaved + leaveSaved + lastScore;
+      const pct = Math.min(Math.round((userUnits / totalUnits) * 100), 100);
+
+      const bar = document.getElementById('global-progress-bar');
+      const text = document.getElementById('global-progress-text');
+      if (bar) bar.style.width = pct + '%';
+      if (text) text.innerText = pct + '%';
+    }
+
+    function resetAllProgress() {
+      if (confirm('Είστε βέβαιοι ότι θέλετε να μηδενίσετε όλα τα αποθηκευμένα δεδομένα προόδου;')) {
+        localStorage.removeItem('moto_learned_cards');
+        localStorage.removeItem('moto_check_roll');
+        localStorage.removeItem('moto_check_leave');
+        localStorage.removeItem('moto_last_quiz_score');
+        learnedCardsSet.clear();
+        renderChecklists();
+        updateFlashcardUI();
+        updateGlobalProgress();
+        showToast('Όλα τα δεδομένα μηδενίστηκαν', '🔄');
+      }
+    }
+
+    /* ====================================================================
+       INITIALIZATION
+       ==================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      updateFlashcardUI();
+      renderChecklists();
+      renderMatrix(matrixData);
+      updateGlobalProgress();
+
+      // Keyboard navigation for flashcards
+      window.addEventListener('keydown', (e) => {
+        const activeTab = document.querySelector('.tab-content:not(.hidden)');
+        if (activeTab && activeTab.id === 'tab-flashcards') {
+          if (e.key === 'ArrowRight') nextFlashcard();
+          if (e.key === 'ArrowLeft') prevFlashcard();
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            flipCurrentCard();
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

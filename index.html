@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Hub</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #101720;
+      font-family: Arial, sans-serif;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    a {
+      padding: 14px 32px;
+      color: #E2E9F1;
+      background: #192330;
+      border: 1px solid #2C3949;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 15px;
+      transition: all 0.2s ease;
+    }
+
+    a:hover {
+      background: #223246;
+      border-color: #648DB8;
+      color: #91C4FA;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 400px) {
+      .buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="buttons">
+    <a href="gemini/index.html">Gemini</a>
+    <a href="claude/index.html">Claude</a>
+  </div>
+</body>
+</html>
